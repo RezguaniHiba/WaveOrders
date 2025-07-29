@@ -9,6 +9,9 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
 /**
  * Class User
  * 
@@ -23,24 +26,50 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class User extends Model
+class User extends Authenticatable
 {
-	protected $table = 'users';
+	use Notifiable;
+	protected $table = 'utilisateurs';
 
 	protected $casts = [
-		'email_verified_at' => 'datetime'
+		'actif' => 'bool',
+		'date_creation' => 'datetime'
 	];
 
 	protected $hidden = [
-		'password',
-		'remember_token'
-	];
+		'mot_de_passe_hash'
+		];
 
 	protected $fillable = [
-		'name',
+		'nom',
 		'email',
-		'email_verified_at',
-		'password',
-		'remember_token'
+		'remember_token',
+		'telephone',
+		'role',
+		'actif',
+		'date_creation'
 	];
+	public function getAuthPassword()
+    {
+        return $this->mot_de_passe_hash;
+    }
+	public function clients()
+	{
+		return $this->hasMany(Client::class, 'commercial_id');
+	}
+
+	public function commandes()
+	{
+		return $this->hasMany(Commande::class, 'cree_par');
+	}
+	
+    // Méthodes utilitaires
+    public function isAdmin() {
+        return $this->role === 'admin';
+    }
+
+    public function isCommercial() {
+        return $this->role === 'commercial';
+    }
+
 }
