@@ -11,21 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('utilisateurs', function (Blueprint $table) {
-             Schema::table('utilisateurs', function (Blueprint $table) {
-            $table->string('remember_token', 100)->nullable()->after('mot_de_passe_hash');
-            });
+     Schema::table('utilisateurs', function (Blueprint $table) {
+            // Ajoutez toutes les colonnes manquantes
+            $table->timestamp('updated_at')->nullable()->after('date_creation');
         });
-    }
 
+    }
+    
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
         Schema::table('utilisateurs', function (Blueprint $table) {
-            $table->dropColumn(['remember_token', 'password']);
-
+            $table->dropColumn(['updated_at']);
         });
     }
 };

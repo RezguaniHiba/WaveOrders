@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $unite
  * @property int|null $stock_disponible
  * @property int|null $stock_reserve
+ * @property int|null $stock_consigne
  * @property Carbon|null $date_maj_stock
  * @property bool $actif
  * @property int|null $famille_id
@@ -42,6 +43,7 @@ class Article extends Model
 		'taux_tva' => 'float',
 		'stock_disponible' => 'int',
 		'stock_reserve' => 'int',
+		'stock_consigne' => 'int',
 		'date_maj_stock' => 'datetime',
 		'actif' => 'bool',
 		'famille_id' => 'int'
@@ -57,6 +59,7 @@ class Article extends Model
 		'unite',
 		'stock_disponible',
 		'stock_reserve',
+		'stock_consigne',
 		'date_maj_stock',
 		'actif',
 		'famille_id'

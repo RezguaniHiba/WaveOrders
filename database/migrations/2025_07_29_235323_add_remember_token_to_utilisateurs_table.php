@@ -12,18 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('utilisateurs', function (Blueprint $table) {
-            // Ajoutez toutes les colonnes manquantes
-            $table->timestamp('updated_at')->nullable()->after('date_creation');
+            $table->string('remember_token', 100)->nullable()->after('mot_de_passe_hash');
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+    public function do
     {
-          Schema::table('utilisateurs', function (Blueprint $table) {
-            $table->dropColumn(['updated_at']);
+        Schema::table('utilisateurs', function (Blueprint $table) {
+            $table->dropColumn('remember_token');
         });
     }
 };

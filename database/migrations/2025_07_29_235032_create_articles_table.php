@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('unite', 10)->nullable()->default('pièce');
             $table->integer('stock_disponible')->nullable()->default(0);
             $table->integer('stock_reserve')->nullable()->default(0);
+            $table->integer('stock_consigne')->nullable()->default(0)->comment('Stock chez le client en consignation');
             $table->dateTime('date_maj_stock')->nullable();
             $table->boolean('actif')->default(true);
             $table->integer('famille_id')->nullable()->index('famille_id');

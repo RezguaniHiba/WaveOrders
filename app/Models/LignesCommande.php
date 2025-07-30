@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property Commande $commande
  * @property Article $article
+ * @property Collection|MouvementsStock[] $mouvements_stocks
  *
  * @package App\Models
  */
@@ -65,5 +67,10 @@ class LignesCommande extends Model
 	public function article()
 	{
 		return $this->belongsTo(Article::class);
+	}
+
+	public function mouvements_stocks()
+	{
+		return $this->hasMany(MouvementsStock::class, 'ligne_commande_id');
 	}
 }

@@ -3,13 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\Commercial\CommandeController;
+
 
 Route::get('/', function () {
-    $nom="Gestion des Commandes";
-    return view('welcome',[
-       'nom' => $nom
-    ]);
-});
+    return view('welcome');
+})->name('home');
+
 // Route vers le formulaire de connexion
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->middleware('guest');
 // Traitement du formulaire de connexion (POST)
@@ -30,6 +30,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/commercial/dashboard', function () {
         return view('commercial.dashboard');
     })->name('commercial.dashboard');
+
+    Route::get('/commercial/commandes', [CommandeController::class, 'index'])->name('commercial.commandes.index');
+
+    // Afficher le formulaire
+Route::get('/commercial/commandes/create', [CommandeController::class, 'create'])->name('commandes.create');
+
+// Enregistrer la commande
+Route::post('/commercial/commandes', [CommandeController::class, 'store'])->name('commandes.store');
+
 });
 
 // Affiche le formulaire
@@ -48,3 +57,4 @@ Route::get('/reset-password/{token}', function (string $token) {
 // Traitement du nouveau mot de passe
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
     ->name('password.update');
+
