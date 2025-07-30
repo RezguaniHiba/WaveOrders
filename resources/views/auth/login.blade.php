@@ -19,7 +19,7 @@
     <div class="row card0 m-0">
         <!-- Colonne gauche -->
         <div class="col-lg-6 col-md-6 col-sm-12 card1">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
+            <img src="{{ asset('images/logo3.png') }}" alt="Logo" class="logo">
             <img src="{{ asset('images/gestord.png') }}" alt="Image illustrative" class="image">
         </div>
 
