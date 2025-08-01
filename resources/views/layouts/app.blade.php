@@ -2,12 +2,19 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    @yield('styles')
+
     <title>@yield('title', 'Gestion Commandes')</title>
+    <link rel="icon" type="image/jpg" href="{{ asset('favicon.jpg') }}">
+
+    
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Bootstrap + FontAwesome -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+     <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     @stack('styles')
 </head>
@@ -21,6 +28,28 @@
     </nav>
 
     <main class="container">
+            {{-- Messages flash (succès ou erreur) --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif 
         @yield('content')
     </main>
 

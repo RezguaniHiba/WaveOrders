@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\Commercial\CommandeController;
 use App\Http\Controllers\ClientController;
 
@@ -34,47 +35,43 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
     ->name('password.update');
 
 //  Routes protégées par rôle
-// Admin uniquement
-Route::middleware(['auth', 'isAdmin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+Route::middleware(['auth'])->group(function () {
+    // Admin uniquement
+    Route::middleware(['auth', 'isAdmin'])->group(function () {
+        Route::get('/admin/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('admin.dashboard');
 
-    // --- Routes pour gestion des Clients par l'admin ---
-Route::prefix('/admin/clients')->name('admin.clients.')->group(function () {
-    Route::get('/', [ClientController::class, 'index'])->name('index');
-    Route::get('/create', [ClientController::class, 'create'])->name('create');
-    Route::post('/', [ClientController::class, 'store'])->name('store');
-    Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-    Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-    Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-    Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
-});
-});
+        // --- Routes pour gestion des Clients par l'admin ---
+        Route::prefix('/admin/clients')->name('admin.clients.')->group(function () {
+            Route::get('/', [ClientController::class, 'index'])->name('index');
+            Route::get('/create', [ClientController::class, 'create'])->name('create');
+            Route::post('/', [ClientController::class, 'store'])->name('store');
+            Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+            Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+            Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+            Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+        });
 
-// Commercial uniquement
-Route::middleware(['auth', 'isCommercial'])->group(function () {
-    Route::get('/commercial/dashboard', function () {
-        return view('commercial.dashboard');
-    })->name('commercial.dashboard');
-    // --- Routes pour gestion des Commandes ---
-    Route::get('/commercial/commandes', [CommandeController::class, 'index'])->name('commercial.commandes.index');
-    Route::get('/commercial/commandes/create', [CommandeController::class, 'create'])->name('commandes.create');
-    Route::post('/commercial/commandes', [CommandeController::class, 'store'])->name('commandes.store');
-
-    Route::get('/commercial/commandes/{id}', [CommandeController::class, 'show'])->name('commandes.show');
-    Route::get('/commercial/commandes/{id}/edit', [CommandeController::class, 'edit'])->name('commandes.edit');
-    Route::delete('/commercial/commandes/{id}', [CommandeController::class, 'destroy'])->name('commandes.destroy');
-
-    // --- Routes pour gestion des Clients ---
- Route::prefix('/commercial/clients')->name('clients.')->group(function () {
-        Route::get('/', [ClientController::class, 'index'])->name('index');
-        Route::get('/create', [ClientController::class, 'create'])->name('create');
-        Route::post('/', [ClientController::class, 'store'])->name('store');
-        Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-        Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-        Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-        Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
     });
-});
 
+    // Commercial uniquement
+    Route::middleware(['auth', 'isCommercial'])->group(function () {
+        Route::get('/commercial/dashboard', function () {
+            return view('commercial.dashboard');
+        })->name('commercial.dashboard');
+        // --- Routes pour gestion des Clients ---
+    Route::prefix('/commercial/clients')->name('clients.')->group(function () {
+            Route::get('/', [ClientController::class, 'index'])->name('index');
+            Route::get('/create', [ClientController::class, 'create'])->name('create');
+            Route::post('/', [ClientController::class, 'store'])->name('store');
+            Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+            Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+            Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+            Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+// --- Commandes (accessibles aux deux rôles) ---
+    Route::resource('commandes', CommandeController::class);
+});

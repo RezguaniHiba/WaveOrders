@@ -56,13 +56,23 @@ public function store(Request $request)
     $data = $request->all();
     $data['commercial_id'] = auth()->id(); //  Ajout de l'ID du commercial connecté
     $data['date_creation'] = Carbon::now(); // ce champ est géré manuellement
+// Vérifie si un client a déjà le même email ou le même téléphone
+   $exists = Client::where(function ($query) use ($request) {
+         $query->where('email', $request->email)
+            ->orWhere('telephone', $request->telephone);
+    })->exists();
 
+    if ($exists) {
+        return redirect()->back()
+                ->withErrors(['email' => 'Un client avec cet email ou ce téléphone existe déjà.'])
+                ->withInput();
+    }
+
+    //Creation de client
     $client = Client::create($data);
-
     // Redirection selon rôle
     $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
     return redirect()->route($routePrefix . 'index')->with('success', 'Client créé avec succès.');
-
 }
 
 
@@ -110,10 +120,22 @@ public function show(Client $client)
         ]);
 
         $client = Client::findOrFail($id);
-
-        // Vérification d'accès pour la mise à jour
+         // Vérification d'accès pour la mise à jour
         if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
             abort(403, 'Accès refusé');
+        }
+        // Vérification : un autre client a-t-il le même email ou téléphone ?
+        $exists = Client::where(function ($query) use ($request) {
+                            $query->where('email', $request->email)
+                                ->orWhere('telephone', $request->telephone);
+                        })
+                        ->where('id', '!=', $id) // Exclut le client actuel
+                        ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withErrors(['email' => 'Un autre client utilise déjà cet email ou ce téléphone.'])
+                ->withInput();
         }
 
         $client->update($request->all());

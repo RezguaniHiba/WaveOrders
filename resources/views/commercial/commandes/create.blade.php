@@ -6,7 +6,6 @@
 
     <form method="POST" action="{{ route('commandes.store') }}">
         @csrf
-
         <div class="row">
             {{-- CLIENT --}}
             <div class="col-md-6 mb-3">
@@ -75,14 +74,16 @@
 {{-- JS pour ajouter dynamiquement des lignes --}}
 <script>
     let ligneIndex = 1;
+    const options = `@foreach($articles as $article)
+        <option value="{{ $article->id }}">{{ $article->designation }} ({{ $article->reference }})</option>
+    @endforeach`;
+
     document.getElementById('add-ligne').addEventListener('click', function () {
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
             <td>
                 <select name="articles[${ligneIndex}][article_id]" class="form-control" required>
-                    @foreach($articles as $article)
-                        <option value="{{ $article->id }}">{{ $article->designation }} ({{ $article->reference }})</option>
-                    @endforeach
+                    ${options}
                 </select>
             </td>
             <td><input type="number" name="articles[${ligneIndex}][quantite]" class="form-control" min="1" required></td>

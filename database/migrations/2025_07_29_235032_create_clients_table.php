@@ -24,7 +24,6 @@ return new class extends Migration
             $table->dateTime('date_creation')->useCurrent();
             $table->dateTime('date_maj')->useCurrentOnUpdate()->nullable();
             $table->integer('commercial_id')->nullable()->index('commercial_id');
-
             $table->index(['code_wavesoft'], 'idx_clients_code');
         });
     }

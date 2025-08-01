@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('utilisateurs', function (Blueprint $table) {
-            $table->string('remember_token', 100)->nullable()->after('mot_de_passe_hash');
+        Schema::table('clients', function (Blueprint $table) {
+            $table->unique(['nom', 'email']);
         });
     }
 
     /**
      * Reverse the migrations.
      */
- public function down(): void 
+    public function down(): void
     {
-        Schema::table('utilisateurs', function (Blueprint $table) {
-            $table->dropColumn('remember_token');
+        Schema::table('clients', function (Blueprint $table) {
+            $table->dropUnique(['clients_nom_email_unique']); // nom généré automatiquement par laravel 
         });
     }
 };

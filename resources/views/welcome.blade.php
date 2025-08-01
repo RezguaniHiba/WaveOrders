@@ -42,7 +42,7 @@
 <body>
 
 <div class="welcome-box">
-    <img src="{{ asset('images/logo2.png') }}" alt="Logo" class="logo">
+    <img src="{{ asset('images/logo4.jpg') }}" alt="Logo" class="logo">
     <h2>Bienvenue sur l'application de gestion des commandes</h2>
     <p class="mt-3">Gérez facilement vos clients, commandes et produits avec intégration à WaveSoft.</p>
         <a href="{{ route('login') }}" class="btn btn-primary">Se connecter</a>

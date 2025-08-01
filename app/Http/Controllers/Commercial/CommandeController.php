@@ -15,24 +15,29 @@ class CommandeController extends Controller
 {
    public function index(Request $request)
 {
-    $query = Commande::with('client')
-        ->where('cree_par', auth()->id())
-        ->orderByDesc('date_commande');
+        $user = Auth::user();
+        $query = Commande::with('client')->orderByDesc('date_commande');
+        if ($user->role === 'commercial') {
+            $query->where(function ($q) use ($user) {
+                $q->where('commercial_id', $user->id)
+                  ->orWhere('cree_par', $user->id);
+            });
+        }
+         // Filtres client & statut
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        $commandes = $query->paginate(15)->appends($request->all());
+        $clients = $user->role === 'admin'
+            ? Client::all()
+            : Client::where('commercial_id', $user->id)->get();
 
-    // Filtrer par client si sélectionné
-    if ($request->filled('client_id')) {
-        $query->where('client_id', $request->client_id);
-    }
-    // Filtrer par statut si précisé
-    if ($request->filled('statut')) {
-        $query->where('statut', $request->statut);
-    }
-    $commandes = $query->paginate(15)->appends($request->all());
+        return view('commercial.commandes.index', compact('commandes', 'clients'));
 
-    // Récupérer les clients du commercial pour la liste déroulante
-    $clients = Client::where('commercial_id', auth()->id())->get();
 
-    return view('commercial.commandes.index', compact('commandes', 'clients'));
 }
 
 
@@ -59,12 +64,13 @@ class CommandeController extends Controller
             DB::beginTransaction();
 
             $numero = 'CMD-' . strtoupper(uniqid());
+            $user = Auth::user();
 
             $commande = Commande::create([
                 'numero' => $numero,
                 'client_id' => $request->client_id,
-                'commercial_id' => Auth::user()->role === 'commercial' ? Auth::id() : null,
-                'cree_par' => Auth::id(),
+                'commercial_id' => $user->role === 'commercial' ? $user->id : null,
+                'cree_par' => $user->id,
                 'date_livraison_prevue' => $request->date_livraison_prevue,
                 'statut' => 'brouillon'
             ]);
@@ -83,7 +89,7 @@ class CommandeController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('commercial.commandes.index')->with('success', 'Commande créée avec succès.');
+            return redirect()->route('commandes.index')->with('success', 'Commande créée avec succès.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -94,20 +100,18 @@ class CommandeController extends Controller
     public function show($id)
     {
         $commande = Commande::with('client', 'lignesCommande.article')->findOrFail($id);
-
-        if ($commande->cree_par != auth()->id()) {
-            abort(403);
-        }
+        $this->authorizeCommandeAccess($commande);
 
         return view('commercial.commandes.show', compact('commande'));
     }
 
     public function edit($id)
     {
-        $commande = Commande::findOrFail($id);
+        $commande = Commande::with('lignesCommande')->findOrFail($id);
+        $this->authorizeCommandeAccess($commande);
 
-        if ($commande->cree_par != auth()->id() || $commande->statut != 'brouillon') {
-            abort(403);
+        if ($commande->statut !== 'brouillon') {
+            abort(403, 'Seules les commandes en brouillon peuvent être modifiées.');
         }
 
         $clients = Client::where('commercial_id', auth()->id())->get();
@@ -119,14 +123,29 @@ class CommandeController extends Controller
     public function destroy($id)
     {
         $commande = Commande::findOrFail($id);
+        $this->authorizeCommandeAccess($commande);
 
-        if ($commande->cree_par != auth()->id() || in_array($commande->statut, ['livree', 'annulee'])) {
-            return back()->withErrors('Action non autorisée.');
+        if (in_array($commande->statut, ['livree', 'annulee'])) {
+            return back()->withErrors('Action non autorisée : commande déjà livrée ou annulée.');
         }
 
-        $commande->statut = 'annulee';
-        $commande->save();
+        $commande->update(['statut' => 'annulee']);
 
-        return redirect()->route('commercial.commandes.index')->with('success', 'Commande annulée.');
+        return redirect()->route('commandes.index')->with('success', 'Commande annulée.');
+    }
+      /**
+     * Vérifie que l'utilisateur actuel peut accéder à une commande
+     */
+    protected function authorizeCommandeAccess(Commande $commande)
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        if ($commande->cree_par != $user->id && $commande->commercial_id != $user->id) {
+            abort(403, 'Vous n’avez pas le droit d’accéder à cette commande.');
+        }
     }
 }
+

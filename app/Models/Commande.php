@@ -92,8 +92,7 @@ class Commande extends Model
 	{
 		return $this->hasMany(HistoriqueCommande::class);
 	}
-
-	public function lignes_commandes()
+	public function lignesCommande()
 	{
 		return $this->hasMany(LignesCommande::class);
 	}
