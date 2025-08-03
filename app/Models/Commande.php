@@ -101,4 +101,11 @@ class Commande extends Model
 	{
 		return $this->hasMany(TransfertsWavesoft::class);
 	}
+	//POUR NE MODIFIE QUE LES COMMANDES EN BROUILLON cad non encore valide
+	public function estModifiable()
+	{
+		return $this->statut === 'brouillon';
+	}
+
+
 }
