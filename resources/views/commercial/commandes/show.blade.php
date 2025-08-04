@@ -3,26 +3,6 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    /* Couleurs personnalisées compatibles Bootstrap */
-    .bg-blue-800 { background-color: #1e3a8a; }
-    .bg-blue-700 { background-color: #1d4ed8; }
-    .bg-blue-600 { background-color: #2563eb; }
-    .bg-blue-500 { background-color: #3b82f6; }
-    .text-blue-800 { color: #1e3a8a; }
-    
-    .bg-gray-50 { background-color: #f8f9fa; }
-    .bg-gray-100 { background-color: #e9ecef; }
-    .bg-gray-200 { background-color: #dee2e6; }
-    .text-gray-600 { color: #6c757d; }
-    .text-gray-800 { color: #343a40; }
-    
-    /* Classes pour les badges personnalisés */
-    .badge-gray-200 { background-color: #e9ecef; color: #495057; }
-    .badge-yellow-100 { background-color: #fff3cd; color: #856404; }
-    .badge-blue-100 { background-color: #cce5ff; color: #004085; }
-    .badge-green-100 { background-color: #d4edda; color: #155724; }
-    .badge-red-100 { background-color: #f8d7da; color: #721c24; }
-    .badge-indigo-100 { background-color: #e2e3e5; color: #383d41; }
 
     /* Style des cartes amélioré */
     .card {
@@ -147,12 +127,12 @@
                             </div>
                             <div class="mb-3">
                                 <h6 class="text-muted"><i class="fas fa-map-marker-alt fa-icon-text"></i>Adresse</h6>
-                                <p class="mb-0">
-                                    {{ $commande->client->adresse ?? '—' }}
-                                    @if($commande->client->ville), {{ $commande->client->ville }}@endif
-                                    @if($commande->client->code_postal) {{ $commande->client->code_postal }}@endif,
-                                    {{ $commande->client->pays ?? '' }}
-                                </p>
+                              <p class="mb-0">
+                                {{ $commande->client->adresse ?? '—' }}
+                                @if($commande->client->ville) , {{ $commande->client->ville }}@endif
+                                @if($commande->client->code_postal) {{ $commande->client->code_postal }}@endif
+                                @if($commande->client->pays), {{ $commande->client->pays }}@endif
+                            </p>
                             </div>
                         </div>
                     </div>
@@ -180,26 +160,20 @@
                                 @endif
                             </div>
                             <div class="mb-3">
-                                <h6 class="text-muted"><i class="fas fa-info-circle fa-icon-text"></i>Statut</h6>
-                                <p class="mb-0">
-                                    <span class="badge badge-{{ [
-                                        'brouillon' => 'secondary',
-                                        'consignation' => 'warning',
-                                        'reserve' => 'info',
-                                        'livree' => 'success',
-                                        'annulee' => 'danger'
-                                    ][$commande->statut] ?? 'dark' }}">
-                                        {{ ucfirst($commande->statut) }}
+                                <h6 class="text-muted"><i class="fas fa-info-circle fa-icon-text"></i>État de la commande</h6>
+                                <p class="mb-0 text-light">
+                                    <span class="badge bg-{{ $statuts[$commande->statut] ?? 'dark' }}">
+                                        {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
                                     </span>
                                 </p>
                             </div>
                             <div class="mb-3">
-                                <h6 class="text-muted"><i class="fas fa-exchange-alt fa-icon-text"></i>WaveSoft</h6>
+                                <h6 class="text-muted"><i class="fas fa-exchange-alt fa-icon-text"></i>Synchronisé avec WaveSoft</h6>
                                 <p class="mb-0">
                                     @if($commande->wavesoft_piece_id)
-                                        <span class="badge badge-success"><i class="fas fa-check me-2"></i>Exportée (ID: {{ $commande->wavesoft_piece_id }})</span>
+                                        <span class="badge badge-success text-dark"><i class="fas fa-check me-2"></i>Exportée (ID: {{ $commande->wavesoft_piece_id }})</span>
                                     @else
-                                        <span class="badge badge-secondary"><i class="fas fa-times me-2"></i>Non exportée</span>
+                                        <span class="badge badge-secondary text-dark"><i class="fas fa-times me-2"></i>Non exportée</span>
                                     @endif
                                 </p>
                             </div>
@@ -217,18 +191,18 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover table-bordered border border-primary mb-0">
+                        <table class="table table-striped table-hover table-bordered border mb-0">
                             <thead class="bg-black-50 text-primary-emphasis">
                                 <tr>
                                     <th class="ps-4">Article</th>
                                     <th>Référence</th>
-                                    <th class="text-end">Qté</th>
-                                    <th class="text-end">PU HT</th>
-                                    <th class="text-end">Remise</th>
-                                    <th class="text-end">TVA</th>
-                                    <th class="text-end">Total HT</th>
-                                    <th class="text-end">Total TTC</th>
-                                    <th class="pe-4">Statut</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-center">Prix Unitaire HT</th>
+                                    <th class="text-center">Remise</th>
+                                    <th class="text-center">Taux de TVA</th>
+                                    <th class="text-center">Total Hors Taxes</th>
+                                    <th class="text-center">Total TTC</th>
+                                    <th class="pe-4 text-center">Statut</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -236,14 +210,14 @@
                                     <tr>
                                         <td class="ps-4">{{ $ligne->article->designation ?? 'Inconnu' }}</td>
                                         <td>{{ $ligne->article->reference ?? '-' }}</td>
-                                        <td class="text-end">{{ $ligne->quantite }}</td>
-                                        <td class="text-end">{{ number_format($ligne->prix_unitaire_ht, 2, ',', ' ') }} DH</td>
-                                        <td class="text-end">{{ $ligne->remise_percent }} %</td>
-                                        <td class="text-end">{{ $ligne->taux_tva }}%</td>
-                                        <td class="text-end">{{ number_format($ligne->montant_ht, 2, ',', ' ') }} DH</td>
-                                        <td class="text-end">{{ number_format($ligne->montant_ht + $ligne->montant_tva, 2, ',', ' ') }} DH</td>
-                                        <td class="pe-4">
-                                            <span class="badge badge-{{ [
+                                        <td class="text-center">{{ $ligne->quantite }}</td>
+                                        <td class="text-center">{{ number_format($ligne->prix_unitaire_ht, 2, ',', ' ') }} DH</td>
+                                        <td class="text-center">{{ $ligne->remise_percent }} %</td>
+                                        <td class="text-center">{{ $ligne->taux_tva }}%</td>
+                                        <td class="text-center">{{ number_format($ligne->montant_ht, 2, ',', ' ') }} DH</td>
+                                        <td class="text-center">{{ number_format($ligne->montant_ht + $ligne->montant_tva, 2, ',', ' ') }} DH</td>
+                                        <td class="pe-4 text-center">
+                                            <span class="text-light badge bg-{{ [
                                                 'en_attente' => 'secondary',
                                                 'reserve' => 'info',
                                                 'en_consigne' => 'warning',
