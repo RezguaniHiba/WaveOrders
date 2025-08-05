@@ -159,13 +159,22 @@
                                 </div>
                                 @endif
                             </div>
-                            <div class="mb-3">
-                                <h6 class="text-muted"><i class="fas fa-info-circle fa-icon-text"></i>État de la commande</h6>
-                                <p class="mb-0 text-light">
-                                    <span class="badge bg-{{ $statuts[$commande->statut] ?? 'dark' }}">
-                                        {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
-                                    </span>
-                                </p>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted"><i class="fas fa-info-circle fa-icon-text"></i>État de la commande</h6>
+                                    <p class="mb-0 text-light">
+                                        <span class="badge bg-{{ $statuts[$commande->statut] ?? 'dark' }}">
+                                            {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
+                                        </span>
+                                    </p>
+                                </div>
+                                 {{--afficher qui a créer la commande pour l'admin--}}
+                            @if(auth()->user()->role === 'admin') 
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted"><i class="fas fa-user-shield fa-icon-text"></i>Créée par</h6>
+                                    <p class="mb-0 text-primary-emphasis"><strong>{{ $commande->utilisateur->nom ?? 'Utilisateur inconnu' }}</strong></p>
+                                </div>
+                            @endif
                             </div>
                             <div class="mb-3">
                                 <h6 class="text-muted"><i class="fas fa-exchange-alt fa-icon-text"></i>Synchronisé avec WaveSoft</h6>
@@ -195,7 +204,7 @@
                             <thead class="bg-black-50 text-primary-emphasis">
                                 <tr>
                                     <th class="ps-4">Article</th>
-                                    <th>Référence</th>
+                                    <th class="text-center">Référence</th>
                                     <th class="text-center">Quantité</th>
                                     <th class="text-center">Prix Unitaire HT</th>
                                     <th class="text-center">Remise</th>
@@ -247,7 +256,7 @@
             <div class="row g-4">
                 <!-- Notes -->
                 @if($commande->notes)
-                <div class="col-lg-7">
+                <div class="col-lg-6">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="mb-0 text-primary-emphasis">
@@ -264,7 +273,7 @@
                 @endif
 
                 <!-- Récapitulatif -->
-                <div class="@if($commande->notes) col-lg-5 @else col-12 @endif">
+                <div class="@if($commande->notes) col-lg-6 @else col-12 @endif">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="mb-0 text-primary-emphasis">
@@ -313,9 +322,10 @@
                     <button class="btn btn-outline-primary rounded-pill px-4 me-2">
                         <i class="fas fa-print fa-icon-text"></i> Imprimer
                     </button>
-                    <button class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: none;">
+                    {{--Boutton pour La modification--}}
+                    <a href="{{ route('commandes.edit',$commande->id) }}" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: none;">
                         <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
