@@ -53,11 +53,12 @@ class LignesCommande extends Model
 		'prix_unitaire_ht',
 		'taux_tva',
 		'remise_percent',
-		'montant_ht',
-		'montant_tva',
 		'statut',
 		'wavesoft_ligne_id'
 	];
+	//les montant sont calculees
+	protected $hidden = ['montant_ht', 'montant_tva'];
+
 
 	public function commande()
 	{
