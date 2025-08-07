@@ -240,10 +240,10 @@
             <!-- Boutons d'action -->
             <div class="mt-4 d-flex justify-content-between action-buttons">
                 <a href="{{ route($routePrefix . 'index') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left fa-icon-text"></i> Retour à la liste
+                    <i class="fas fa-arrow-left fa-icon-text"></i> Retour à la liste des clients
                 </a>
                 <a href="{{ route((auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.') . 'edit', $client->id) }}" 
-                   class="btn btn-primary" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: none;">
+                   class="btn btn-primary">
                     <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier les informations
                 </a>
             </div>

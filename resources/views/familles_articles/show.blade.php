@@ -93,7 +93,7 @@
                     <i class="fas fa-arrow-left me-2"></i>Retour à la liste
                 </a>
                 <div class="btn-group">
-                    <a href="{{ route('familles-articles.edit', $famille) }}" class="btn btn-warning rounded-pill px-4">
+                    <a href="{{ route('familles-articles.edit', $famille) }}" class="btn btn-primary rounded-pill px-4">
                         <i class="fas fa-edit me-2"></i>Modifier la famille d'Articles
                     </a>
                     @if($famille->articles->count() === 0 && $famille->enfants->count() === 0)

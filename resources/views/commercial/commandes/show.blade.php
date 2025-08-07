@@ -323,8 +323,8 @@
                         <i class="fas fa-print fa-icon-text"></i> Imprimer
                     </button>
                     {{--Boutton pour La modification--}}
-                    <a href="{{ route('commandes.edit',$commande->id) }}" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: none;">
-                        <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier
+                    <a href="{{ route('commandes.edit',$commande->id) }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier la commande
                     </a>
                 </div>
             </div>

@@ -37,7 +37,7 @@ class Reglement extends Model
      */
     public function utilisateur()
     {
-        return $this->belongsTo(Utilisateur::class, 'cree_par');
+        return $this->belongsTo(User::class, 'cree_par');
     }
 
     /**

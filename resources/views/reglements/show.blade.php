@@ -1,184 +1,311 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .bg-light-blue {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    }
+    
+    .card {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background-color: white;
+    }
+    
+    .shadow-lg-custom {
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .fa-icon-text {
+        margin-right: 0.6rem;
+    }
+    
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.4em 0.7em;
+        font-weight: 500;
+    }
+    
+    .bg-gray-50 {
+        background-color: #f9fafb;
+    }
+    
+    .text-primary-emphasis {
+        color: #1e3a8a;
+    }
+    
+    .whitespace-pre-line {
+        white-space: pre-line;
+    }
+    
+    /* Style des boutons */
+    .btn {
+        font-size: 1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .info-item {
+        flex: 1;
+        min-width: 200px;
+        margin-bottom: 0.5rem;
+        padding-right: 1rem;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-weight: 500;
+    }
+    
+    .text-primary-value {
+        color: #1e3a8a;
+        font-weight: bold;
+    }
+    
+    .border-right {
+        border-right: 1px solid #e9ecef;
+    }
+    
+    @media (max-width: 768px) {
+        .info-item {
+            flex: 100%;
+            padding-right: 0;
+        }
+        .border-right {
+            border-right: none;
+        }
+    }
+</style>
+@endpush
+
 @section('title', 'Détail Règlement - #'.$reglement->id)
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-semibold">
-            <i class="fas fa-money-bill-wave mr-2"></i>Détail du règlement #{{ $reglement->id }}
-        </h1>
-        
-        <div class="flex space-x-2">
-            <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left mr-2"></i> Retour
-            </a>
-            <a href="{{ route('reglements.edit', $reglement->id) }}" class="btn btn-primary">
-                <i class="fas fa-edit mr-2"></i> Modifier
-            </a>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <!-- En-tête -->
-        <div class="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-medium text-gray-900">
-                    Règlement pour la commande #{{ $reglement->commande->numero }}
-                </h2>
-                <p class="text-sm text-gray-500 mt-1">
-                    Créé le {{ $reglement->created_at->format('d/m/Y à H:i') }}
-                    par {{ $reglement->utilisateur->nom }}
-                </p>
-            </div>
-            <div class="flex items-center">
-                <span class="px-3 py-1 rounded-full text-sm font-medium 
-                    @if($reglement->commande->statut === 'payee')
-                        bg-green-100 text-green-800
-                    @else
-                        bg-blue-100 text-blue-800
-                    @endif">
+<div class="container py-4">
+    <div class="card border-0 shadow-lg-custom">
+        <!-- En-tête de la carte -->
+        <div class="card-header text-white bg-light-blue py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0">
+                    <i class="fas fa-money-bill-wave fa-icon-text"></i>
+                    Détail du règlement #{{ $reglement->id }}
+                </h3>
+                <span class="badge bg-light text-dark">
                     {{ $reglement->commande->statut === 'payee' ? 'Commande payée' : 'Commande en cours' }}
                 </span>
             </div>
         </div>
 
-        <!-- Corps -->
-        <div class="px-6 py-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Colonne gauche -->
-                <div>
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Informations générales</h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Date du règlement</label>
-                                <p class="mt-1 text-sm text-gray-900">
-                                    {{ $reglement->date_reglement->format('d/m/Y') }}
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Montant</label>
-                                <p class="mt-1 text-lg font-semibold text-gray-900">
-                                    {{ number_format($reglement->montant, 2, ',', ' ') }} DH
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Mode de paiement</label>
-                                <p class="mt-1 text-sm text-gray-900">
-                                    <span class="px-2 py-1 rounded 
-                                        @if($reglement->mode === 'especes') bg-blue-100 text-blue-800 @endif
-                                        @if($reglement->mode === 'cheque') bg-green-100 text-green-800 @endif
-                                        @if($reglement->mode === 'carte_bancaire') bg-purple-100 text-purple-800 @endif
-                                        @if($reglement->mode === 'virement') bg-indigo-100 text-indigo-800 @endif
-                                        @if($reglement->mode === 'autre') bg-gray-100 text-gray-800 @endif">
-                                        {{ $reglement->mode_libelle }}
-                                    </span>
-                                </p>
-                            </div>
+        <div class="card-body bg-gray-50">
+            <!-- Cartes Informations -->
+            <div class="row g-4 mb-4">
+                <!-- Carte Informations générales -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0 text-primary-emphasis">
+                                <i class="fas fa-info-circle fa-icon-text"></i>Informations générales
+                            </h5>
                         </div>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Clients</h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Client commande</label>
-                                <p class="mt-1 text-sm text-gray-900">
-                                    {{ $reglement->commande->client->nom }}
-                                </p>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <div class="info-item border-right">
+                                    <div class="info-label">
+                                        <i class="fas fa-file-invoice fa-icon-text"></i>Commande associée
+                                    </div>
+                                    <div class="info-value">#{{ $reglement->commande->numero }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="far fa-calendar-alt fa-icon-text"></i>Date du règlement
+                                    </div>
+                                    <div class="info-value">{{ $reglement->date_reglement->format('d/m/Y') }}</div>
+                                </div>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Client payeur</label>
-                                <p class="mt-1 text-sm text-gray-900">
-                                    {{ $reglement->clientPayeur->nom }}
-                                </p>
+                            <div class="info-row">
+                                <div class="info-item border-right">
+                                    <div class="info-label">
+                                        <i class="fas fa-money-bill-wave fa-icon-text"></i>Montant
+                                    </div>
+                                    <div class="info-value text-primary-value">{{ number_format($reglement->montant, 2, ',', ' ') }} DH</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-credit-card fa-icon-text"></i>Mode de paiement
+                                    </div>
+                                    <div class="info-value">
+                                        <span class="badge bg-{{
+                                            ['especes' => 'primary',
+                                             'cheque' => 'success',
+                                             'carte_bancaire' => 'info',
+                                             'virement' => 'secondary',
+                                             'autre' => 'light text-dark'][$reglement->mode]
+                                        }}">
+                                            {{ $reglement->mode_libelle }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Type de facturation</label>
-                                <p class="mt-1 text-sm text-gray-900">
-                                    {{ $reglement->type_facturation_libelle }}
-                                </p>
+                            <div class="info-row">
+                                <div class="info-item border-right">
+                                    <div class="info-label">
+                                        <i class="fas fa-user-clock fa-icon-text"></i>Créé par
+                                    </div>
+                                    <div class="info-value">{{ $reglement->utilisateur->nom }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-sync-alt fa-icon-text"></i>Dernière modification
+                                    </div>
+                                    <div class="info-value">{{ $reglement->updated_at->format('d/m/Y à H:i') }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Colonne droite -->
-                <div>
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Justificatif</h3>
-                        
-                        @if($reglement->fichier_justificatif)
-                            <div class="border rounded-lg p-4 bg-gray-50">
-                                <div class="flex items-center">
-                                    <i class="fas fa-file-pdf text-red-500 text-2xl mr-3"></i>
+
+                <!-- Carte Clients -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0 text-primary-emphasis">
+                                <i class="fas fa-users fa-icon-text"></i>Informations clients
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <div class="info-item border-right">
+                                    <div class="info-label">
+                                        <i class="fas fa-user-tag fa-icon-text"></i>Client commande
+                                    </div>
+                                    <div class="info-value font-weight-bold">{{ $reglement->commande->client->nom }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-user-check fa-icon-text"></i>Client payeur
+                                    </div>
+                                    <div class="info-value font-weight-bold">{{ $reglement->clientPayeur->nom }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-receipt fa-icon-text"></i>Type de facturation
+                                    </div>
+                                    <div class="info-value">{{ $reglement->type_facturation_libelle }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Justificatif et Commentaire -->
+            <div class="row g-4">
+                <!-- Justificatif -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0 text-primary-emphasis">
+                                <i class="fas fa-file-alt fa-icon-text"></i>Justificatif
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if($reglement->fichier_justificatif)
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-file-pdf text-danger fs-3 me-3"></i>
                                     <div>
-                                        <p class="font-medium">Document justificatif</p>
-                                        <p class="text-sm text-gray-500">
+                                        <h6 class="mb-1">Document justificatif</h6>
+                                        <p class="small text-muted mb-0">
                                             {{ basename($reglement->fichier_justificatif) }}
                                         </p>
                                     </div>
                                 </div>
-                                <div class="mt-4">
+                                <div class="d-flex gap-2">
                                     <a href="{{ Storage::url($reglement->fichier_justificatif) }}" 
                                        target="_blank" 
-                                       class="btn btn-outline-primary mr-2">
-                                        <i class="fas fa-eye mr-2"></i> Voir le document
+                                       class="btn btn-sm btn-outline-primary btn-rounded">
+                                        <i class="fas fa-eye fa-icon-text"></i> Voir
                                     </a>
                                     <a href="{{ Storage::url($reglement->fichier_justificatif) }}" 
                                        download 
-                                       class="btn btn-outline-secondary">
-                                        <i class="fas fa-download mr-2"></i> Télécharger
+                                       class="btn btn-sm btn-outline-secondary btn-rounded">
+                                        <i class="fas fa-download fa-icon-text"></i> Télécharger
                                     </a>
                                 </div>
-                            </div>
-                        @else
-                            <div class="border rounded-lg p-4 bg-gray-50 text-center text-gray-500">
-                                <i class="fas fa-exclamation-circle mr-2"></i>
-                                Aucun justificatif associé à ce règlement
-                            </div>
-                        @endif
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Commentaire</h3>
-                        
-                        @if($reglement->commentaire)
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <p class="text-gray-800 whitespace-pre-line">{{ $reglement->commentaire }}</p>
-                            </div>
-                        @else
-                            <div class="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-                                <i class="fas fa-info-circle mr-2"></i>
-                                Aucun commentaire pour ce règlement
-                            </div>
-                        @endif
+                            @else
+                                <div class="alert alert-light text-center py-3">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    Aucun justificatif associé à ce règlement
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
+                @if($reglement->commentaire)
+                <!-- Commentaire -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0 text-primary-emphasis">
+                                <i class="fas fa-comment fa-icon-text"></i>Commentaire
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="p-3 bg-light rounded">
+                                <p class="mb-0 whitespace-pre-line">{{ $reglement->commentaire }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
-        </div>
-
-        <!-- Pied de page -->
-        <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
-            <div>
-                <p class="text-sm text-gray-500">
-                    Dernière modification: {{ $reglement->updated_at->format('d/m/Y à H:i') }}
-                </p>
-            </div>
-            <div>
-                <form action="{{ route('reglements.destroy', $reglement->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirmer la suppression ?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger">
-                        <i class="fas fa-trash mr-2"></i> Supprimer
-                    </button>
-                </form>
+            <!-- Boutons d'action -->
+            <div class="card-footer bg-transparent border-top-0 py-3">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                    <div class="btn-group">
+                        <a href="{{ route('reglements.edit', $reglement->id) }}" class="btn rounded-pill btn-primary">
+                            <i class="fas fa-pencil-alt fa-icon-text"></i>Modifier le règlement
+                        </a>
+                        <form action="{{ route('reglements.destroy', $reglement->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 ms-2" 
+                                    onclick="return confirm('Confirmer la suppression ?')">
+                                <i class="fas fa-trash-alt me-2"></i>Supprimer 
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

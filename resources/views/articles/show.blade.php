@@ -206,17 +206,17 @@
 
             <!-- Boutons d'action -->
             <div class="mt-4 d-flex justify-content-between">
-                <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('articles.index') }}" class="btn rounded-pill btn-outline-secondary">
                     <i class="fas fa-arrow-left fa-icon-text"></i> Retour à la liste
                 </a>
                 <div class="btn-group">
-                    <a href="{{ route('articles.edit', $article) }}" class="btn btn-primary" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: none;">
-                        <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier
+                    <a href="{{ route('articles.edit', $article) }}" class="btn rounded-pill btn-primary">
+                        <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier l'article
                     </a>
                     <form action="{{ route('articles.destroy', $article) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger ms-2" 
+                        <button type="submit" class="btn btn-danger ms-2 rounded-pill" 
                                 onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?')">
                             <i class="fas fa-trash-alt fa-icon-text"></i> Supprimer
                         </button>

@@ -3,96 +3,142 @@
 @section('title', isset($commande) ? "Règlements - Commande #{$commande->numero}" : 'Liste des règlements')
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-semibold">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h3 class="mb-0">
+            <i class="fas fa-money-bill-wave me-2"></i>
             @if(isset($commande))
-                <i class="fas fa-money-bill-wave mr-2"></i>Règlements - Commande #{{ $commande->numero }}
-                <a href="{{ route('reglements.index') }}" class="text-sm text-blue-600 ml-4">
-                    <i class="fas fa-list"></i> Voir tous les règlements
+                Règlements - Commande #{{ $commande->numero }}
+                <a href="{{ route('reglements.index') }}" class="btn btn-sm btn-outline-secondary ms-3">
+                    <i class="fas fa-list me-1"></i> Voir tous
                 </a>
             @else
-                <i class="fas fa-money-bill-wave mr-2"></i>Liste des règlements
-                <a href="{{ route('reglements.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Nouveau règlement
+                Liste des règlements
+            @endif
+        </h3>
+        
+        <div class="d-flex gap-3 flex-wrap">
+            @if(isset($commande))
+                <a href="{{ route('commandes.reglements.create', $commande->id) }}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                    <i class="fas fa-plus me-1"></i> Nouveau règlement
+                </a>
+            @else
+                <a href="{{ route('reglements.create') }}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                    <i class="fas fa-plus me-1"></i> Nouveau règlement
                 </a>
             @endif
-        </h1>
-        
-        @if(isset($commande))
-        <a href="{{ route('commandes.reglements.create', $commande->id) }}" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i>Nouveau règlement
-            </a>
-        @endif
+        </div>
     </div>
 
-    <div class="bg-white rounded shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    @if(!isset($commande))
-                        <th class="px-4 py-3 text-left">Commande</th>
-                    @endif
-                    <th class="px-4 py-3 text-left">Date</th>
-                    <th class="px-4 py-3 text-left">Montant</th>
-                    <th class="px-4 py-3 text-left">Mode</th>
-                    <th class="px-4 py-3 text-left">Facturation</th>
-                    <th class="px-4 py-3 text-left">Saisi par</th>
-                    <th class="px-4 py-3 text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                @forelse($reglements as $reglement)
-                <tr class="hover:bg-gray-50">
-                    @if(!isset($commande))
-                        <td class="px-4 py-4">
-                            <a href="{{ route('commandes.show', $reglement->commande_id) }}" class="text-blue-600 hover:underline">
-                                #{{ $reglement->commande->numero }}
-                            </a>
-                        </td>
-                    @endif
-                    <td class="px-4 py-4">{{ $reglement->date_reglement->format('d/m/Y') }}</td>
-                    <td class="px-4 py-4 font-medium">{{ number_format($reglement->montant, 2, ',', ' ') }} DH</td>
-                    <td class="px-4 py-4">
-                        <span class="badge bg-{{ [
-                            'especes' => 'blue-100 text-blue-800',
-                            'cheque' => 'green-100 text-green-800',
-                            'carte_bancaire' => 'purple-100 text-purple-800',
-                            'virement' => 'indigo-100 text-indigo-800'
-                        ][$reglement->mode] ?? 'gray-100 text-gray-800' }}">
-                            {{ $reglement->mode_libelle }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-4">{{ $reglement->type_facturation_libelle }}</td>
-                    <td class="px-4 py-4">{{ $reglement->utilisateur->nom }}</td>
-                    <td class="px-4 py-4 text-center space-x-2">
-                        <a href="{{ route('reglements.show', $reglement->id) }}" class="text-blue-600 hover:text-blue-800" title="Voir">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('reglements.edit', $reglement->id) }}" class="text-yellow-600 hover:text-yellow-800" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <form action="{{ route('reglements.destroy', $reglement->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirmer la suppression ?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-800" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="{{ isset($commande) ? '7' : '8' }}" class="px-4 py-6 text-center text-gray-500">
-                        <i class="fas fa-info-circle mr-2"></i>Aucun règlement trouvé
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+    @if($reglements->count() > 0)
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            @if(!isset($commande))
+                                <th class="text-center">Commande</th>
+                            @endif
+                            <th class="text-center">Date</th>
+                            <th class="text-center">Montant</th>
+                            <th class="text-center">Mode de paiement</th>
+                            <th class="text-center">Type de facturation</th>
+                            <th class="text-center">Saisi par</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($reglements as $reglement)
+                        <tr>
+                            @if(!isset($commande))
+                                <td class="text-center">
+                                    <a href="{{ route('commandes.show', $reglement->commande_id) }}" class="text-primary text-decoration-none">
+                                        #{{ $reglement->commande->numero }}
+                                    </a>
+                                </td>
+                            @endif
+                            <td class="text-center">{{ $reglement->date_reglement->format('d/m/Y') }}</td>
+                            <td class="fw-bold text-center">{{ number_format($reglement->montant, 2, ',', ' ') }} DH</td>
+                            <td class="text-center">
+                                <span class="badge bg-{{ [
+                                    'especes' => 'primary',
+                                    'cheque' => 'success',
+                                    'carte_bancaire' => 'info',
+                                    'virement' => 'secondary'
+                                ][$reglement->mode] ?? 'light text-dark' }}">
+                                    {{ $reglement->mode_libelle }}
+                                </span>
+                            </td>
+                            <td class="text-center">{{ $reglement->type_facturation_libelle }}</td>
+                            <td class="text-center">{{ $reglement->utilisateur->nom }}</td>
+                            <td class="text-center text-nowrap">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ route('reglements.show', $reglement->id) }}" 
+                                       class="btn btn-sm btn-outline-primary rounded-circle action-btn" 
+                                       title="Voir"
+                                       data-bs-toggle="tooltip">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('reglements.edit', $reglement->id) }}" 
+                                       class="btn btn-sm btn-outline-warning rounded-circle action-btn" 
+                                       title="Modifier"
+                                       data-bs-toggle="tooltip">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
+                                    <form action="{{ route('reglements.destroy', $reglement->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-outline-danger rounded-circle action-btn" 
+                                                title="Supprimer" 
+                                                onclick="return confirm('Confirmer la suppression ?')"
+                                                data-bs-toggle="tooltip">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <div class="mt-4">
-        {{ $reglements->links() }}
+    <div class="mt-3 d-flex justify-content-center">
+        {{ $reglements->withQueryString()->links() }}
     </div>
+
+    @else
+    <div class="alert alert-info text-center py-3">
+        <i class="fas fa-info-circle me-2"></i>Aucun règlement trouvé
+    </div>
+    @endif
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Activer tous les tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<style>
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .table th {
+        white-space: nowrap;
+    }
+</style>
 @endsection

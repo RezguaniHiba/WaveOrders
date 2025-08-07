@@ -42,7 +42,7 @@ class ReglementController extends Controller
      //Qui va récupérer les règlements lies a la commandes passe 
     public function parCommande(Commande $commande)
     {
-        $user = Auth::user();
+        $user = Auth::user();        
         // Vérifier que le commercial a le droit de voir cette commande
         if ($user->role === 'commercial' && $commande->commercial_id !== $user->id && $commande->cree_par !== $user->id) {
                 abort(403, "Vous n'avez pas accès à cette commande.");
@@ -64,6 +64,9 @@ class ReglementController extends Controller
      */
     public function show(Reglement $reglement)
     {
+        $this->authorize('view', $reglement);
+    
+        $reglement->load(['commande.client', 'clientPayeur', 'utilisateur']);
         return view('reglements.show', compact('reglement'));
     }
 
@@ -94,17 +97,20 @@ public function create(Request $request, Commande $commande = null)
     // Pour la liste générale (admin ou commercial)
     $commandes = [];
     if (auth()->user()->role === 'admin') {
-        $commandes = Commande::where('statut', '!=', 'annulee')
-            ->orderBy('numero', 'desc')
-            ->get();
+        $commandes = Commande::with('reglements')
+        ->where('statut', '!=', 'annulee')
+        ->get()
+        ->filter(fn($cmd) => $cmd->montant_restant > 0)//filter() est appliqué après récupération des modèles car montant restant est un att calculee non stocker dans la base
+        ->sortByDesc('numero');
     } else {
         $commandes = Commande::where(function($query) {
                 $query->where('commercial_id', auth()->id())
                       ->orWhere('cree_par', auth()->id());
             })
-            ->where('statut', '!=', 'annulee')
-            ->orderBy('numero', 'desc')
-            ->get();
+        ->where('statut', '!=', 'annulee')
+        ->get()
+        ->filter(fn($cmd) => $cmd->montant_restant > 0)
+        ->sortByDesc('numero');
     }
 
     return view('reglements.create', [
@@ -163,15 +169,23 @@ public function create(Request $request, Commande $commande = null)
      */
     public function edit(Reglement $reglement)
     {
-        $clients = Client::all();
-        return view('reglements.edit', compact('reglement', 'clients'));
+        $this->authorize('update', $reglement);
+        
+        $reglement->load(['commande.client', 'clientPayeur']);
+        $clients = Client::orderBy('nom')->get();
+        
+        return view('reglements.edit', [
+            'reglement' => $reglement,
+            'clients' => $clients
+        ]);
     }
-
     /**
      * Met à jour un règlement.
      */
     public function update(Request $request, Reglement $reglement)
     {
+        $this->authorize('update', $reglement);
+
         $validated = $request->validate([
             'montant' => 'required|numeric|min:0.01',
             'mode' => 'required|in:especes,cheque,carte_bancaire,virement,autre',
@@ -191,24 +205,38 @@ public function create(Request $request, Commande $commande = null)
 
         $reglement->update($validated);
 
-        return redirect()->route('reglements.show', $reglement->id)
-            ->with('success', 'Règlement mis à jour avec succès.');
-    }
+         // Redirection cohérente avec le store()
+            if (strpos(url()->previous(), 'commandes/')) {
+                return redirect()->route('commandes.reglements.index', $reglement->commande_id)
+                    ->with('success', 'Règlement mis à jour avec succès.');
+            }
+
+            return redirect()->route('reglements.index')
+                ->with('success', 'Règlement mis à jour avec succès.');
+        }
 
     /**
      * Supprime un règlement.
      */
     public function destroy(Reglement $reglement)
     {
+        $this->authorize('delete', $reglement);
+        $commandeId = $reglement->commande_id;
         if ($reglement->fichier_justificatif && Storage::disk('public')->exists($reglement->fichier_justificatif)) {
             Storage::disk('public')->delete($reglement->fichier_justificatif);
         }
 
         $reglement->delete();
 
+       // Redirection cohérente
+        if (strpos(url()->previous(), 'commandes/')) {
+            return redirect()->route('commandes.reglements.index', $commandeId)
+                ->with('success', 'Règlement supprimé avec succès.');
+        }
+
         return redirect()->route('reglements.index')
             ->with('success', 'Règlement supprimé avec succès.');
     }
    
 
-}
+}  

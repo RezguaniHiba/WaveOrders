@@ -3,239 +3,211 @@
 @section('title', isset($commande) ? 'Nouveau Règlement - Commande #'.$commande->numero : 'Nouveau Règlement')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <!-- En-tête dynamique -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">
-                    <i class="fas fa-money-bill-wave text-primary me-2"></i>
-                    @isset($commande)
-                        Nouveau règlement - Commande #{{ $commande->numero }}
-                    @else
-                        Nouveau règlement
-                    @endisset
-                </h1>
-                <a href="{{ isset($commande) ? route('commandes.show', $commande->id) : route('reglements.index') }}" 
-                   class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i> Retour
-                </a>
-            </div>
+<div class="container py-3">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-light-blue text-white py-3">
+            <h3 class="h5 mb-0">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                @isset($commande)
+                    Nouveau règlement - Commande #{{ $commande->numero }}
+                @else
+                    Nouveau règlement
+                @endisset
+            </h3>
+        </div>
 
-            <!-- Carte du formulaire -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light py-3">
-                    <h2 class="h5 mb-0">Informations du règlement</h2>
-                </div>
-                
-                <form action="{{ route('reglements.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @isset($commande)
-                        <input type="hidden" name="from_commande" value="1">
-                    @endisset
-                    <div class="card-body">
-                        @if($errors->any())
-                            <div class="alert alert-danger mb-4">
-                                <ul class="mb-0">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+        <div class="card-body p-4">
+            <form action="{{ route('reglements.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @isset($commande)
+                    <input type="hidden" name="from_commande" value="1">
+                @endisset
+
+                @if($errors->any())
+                    <div class="alert alert-danger mb-4">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="row g-4">
+                    <!-- Section Commande et Client -->
+                    <div class="col-md-6">
+                        @if(!isset($commande))
+                        <div class="mb-4">
+                            <label for="commande_id" class="form-label fw-bold required">
+                                Commande associée
+                            </label>
+                            <select name="commande_id" id="commande_id" class="form-select" required>
+                                <option value="">Sélectionner une commande...</option>
+                                @foreach($commandes as $cmd)
+                                    <option value="{{ $cmd->id }}" 
+                                        {{ old('commande_id') == $cmd->id ? 'selected' : '' }}
+                                        data-client-id="{{ $cmd->client_id }}"
+                                        data-montant-restant="{{ $cmd->montant_restant }}">
+                                        Commande #{{ $cmd->numero }} - {{ $cmd->client->nom }} 
+                                        ({{ number_format($cmd->montant_ttc, 2) }} DH)
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @else
+                            <input type="hidden" name="commande_id" value="{{ $commande->id }}">
                         @endif
 
-                        <!-- Section 1 : Commande et clients -->
-                        <div class="row mb-4">
-                            <!-- Colonne gauche -->
-                            <div class="col-md-6">
-                                <!-- Sélection de la commande -->
-                                @if(!isset($commande))
-                                <div class="mb-4">
-                                    <label for="commande_id" class="form-label fw-bold required">
-                                        Commande associée
-                                    </label>
-                                    <select name="commande_id" id="commande_id" class="form-select" required>
-                                        <option value="">Sélectionner une commande...</option>
-                                        @foreach($commandes as $cmd)
-                                            <option value="{{ $cmd->id }}" 
-                                                {{ old('commande_id') == $cmd->id ? 'selected' : '' }}
-                                                data-client-id="{{ $cmd->client_id }}"
-                                                data-montant-restant="{{ $cmd->montant_restant }}">
-                                                Commande #{{ $cmd->numero }} - {{ $cmd->client->nom }} 
-                                                ({{ number_format($cmd->montant_ttc, 2) }} DH)
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                        <div class="mb-3">
+                            <label for="client_commande_nom" class="form-label fw-bold">
+                                Client commande
+                            </label>
+                            @if(isset($commande))
+                                <input type="text" 
+                                       id="client_commande_nom"
+                                       class="form-control" 
+                                       value="{{ $commande->client->nom }}" 
+                                       readonly>
+                            @else
+                                <input type="text" 
+                                       id="client_commande_nom" 
+                                       class="form-control" 
+                                       readonly>
+                                <input type="hidden" 
+                                       id="client_commande_id" 
+                                       name="client_commande_id">
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="type_facturation" class="form-label fw-bold">
+                                Type de facturation
+                            </label>
+                            <select name="type_facturation" id="type_facturation" class="form-select">
+                                <option value="">Sélectionner...</option>
+                                <option value="facturer_client" {{ old('type_facturation') == 'facturer_client' ? 'selected' : '' }}>Facturer client</option>
+                                <option value="client_payeur" {{ old('type_facturation') == 'client_payeur' ? 'selected' : '' }}>Client payeur</option>
+                                <option value="autre" {{ old('type_facturation') == 'autre' ? 'selected' : '' }}>Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="client_payeur_id" class="form-label fw-bold required">
+                                Client payeur
+                            </label>
+                            <select name="client_payeur_id" id="client_payeur_id" class="form-select" required>
+                                @if(isset($commande))
+                                    <option value="">Même que client commande</option>
+                                    <option value="{{ $commande->client_id }}" selected>
+                                        {{ $commande->client->nom }}
+                                    </option>
                                 @else
-                                    <input type="hidden" name="commande_id" value="{{ $commande->id }}">
+                                    <option value="">Sélectionner un client...</option>
                                 @endif
+                                @foreach($clients as $client)
+                                    <option value="{{ $client->id }}" 
+                                        {{ old('client_payeur_id') == $client->id ? 'selected' : '' }}>
+                                        {{ $client->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
 
-                                <!-- Client commande -->
-                                <div class="mb-3">
-                                    <label for="client_commande_nom" class="form-label fw-bold">
-                                        Client commande
-                                    </label>
-                                    @if(isset($commande))
-                                        <input type="text" 
-                                               id="client_commande_nom"
-                                               class="form-control" 
-                                               value="{{ $commande->client->nom }}" 
-                                               readonly>
+                    <!-- Section Paiement -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="montant" class="form-label fw-bold required">
+                                Montant (DH)
+                            </label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0.01" 
+                                   name="montant" 
+                                   id="montant" 
+                                   value="{{ old('montant') }}" 
+                                   class="form-control" 
+                                   required
+                                   @isset($commande)
+                                       max="{{ $commande->montant_restant }}"
+                                   @endisset
+                            >
+                            <small class="form-text text-muted">
+                                Reste à payer: 
+                                <span id="reste_a_payer">
+                                    @isset($commande)
+                                        {{ number_format($commande->montant_restant, 2) }}
                                     @else
-                                        <input type="text" 
-                                               id="client_commande_nom" 
-                                               class="form-control" 
-                                               readonly>
-                                        <input type="hidden" 
-                                               id="client_commande_id" 
-                                               name="client_commande_id">
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Colonne droite -->
-                            <div class="col-md-6">
-                                <!-- Type de facturation -->
-                                <div class="mb-3">
-                                    <label for="type_facturation" class="form-label fw-bold">
-                                        Type de facturation
-                                    </label>
-                                    <select name="type_facturation" id="type_facturation" class="form-select">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="facturer_client" {{ old('type_facturation') == 'facturer_client' ? 'selected' : '' }}>Facturer client</option>
-                                        <option value="client_payeur" {{ old('type_facturation') == 'client_payeur' ? 'selected' : '' }}>Client payeur</option>
-                                        <option value="autre" {{ old('type_facturation') == 'autre' ? 'selected' : '' }}>Autre</option>
-                                    </select>
-                                </div>
-
-                                <!-- Client payeur -->
-                                <div class="mb-3">
-                                    <label for="client_payeur_id" class="form-label fw-bold required">
-                                        Client payeur
-                                    </label>
-                                    <select name="client_payeur_id" id="client_payeur_id" class="form-select" required>
-                                        @if(isset($commande))
-                                            <option value="">Même que client commande</option>
-                                            <option value="{{ $commande->client_id }}" selected>
-                                                {{ $commande->client->nom }}
-                                            </option>
-                                        @else
-                                            <option value="">Sélectionner un client...</option>
-                                        @endif
-                                        @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" 
-                                                {{ old('client_payeur_id') == $client->id ? 'selected' : '' }}>
-                                                {{ $client->nom }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
+                                        0.00
+                                    @endisset
+                                </span> DH
+                            </small>
                         </div>
 
-                        <!-- Section 2 : Montant et paiement -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <!-- Montant -->
-                                <div class="mb-3">
-                                    <label for="montant" class="form-label fw-bold required">
-                                        Montant (DH)
-                                    </label>
-                                    <input type="number" 
-                                           step="0.01" 
-                                           min="0.01" 
-                                           name="montant" 
-                                           id="montant" 
-                                           value="{{ old('montant') }}" 
-                                           class="form-control" 
-                                           required
-                                           @isset($commande)
-                                               max="{{ $commande->montant_restant }}"
-                                           @endisset
-                                    >
-                                    <small class="form-text text-muted">
-                                        Reste à payer: 
-                                        <span id="reste_a_payer">
-                                            @isset($commande)
-                                                {{ number_format($commande->montant_restant, 2) }}
-                                            @else
-                                                0.00
-                                            @endisset
-                                        </span> DH
-                                    </small>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <!-- Mode de paiement -->
-                                <div class="mb-3">
-                                    <label for="mode" class="form-label fw-bold required">
-                                        Mode de paiement
-                                    </label>
-                                    <select name="mode" id="mode" class="form-select" required>
-                                        <option value="">Sélectionner...</option>
-                                        <option value="especes" {{ old('mode') == 'especes' ? 'selected' : '' }}>Espèces</option>
-                                        <option value="cheque" {{ old('mode') == 'cheque' ? 'selected' : '' }}>Chèque</option>
-                                        <option value="carte_bancaire" {{ old('mode') == 'carte_bancaire' ? 'selected' : '' }}>Carte bancaire</option>
-                                        <option value="virement" {{ old('mode') == 'virement' ? 'selected' : '' }}>Virement</option>
-                                        <option value="autre" {{ old('mode') == 'autre' ? 'selected' : '' }}>Autre</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <!-- Date règlement -->
-                                <div class="mb-3">
-                                    <label for="date_reglement" class="form-label fw-bold">
-                                        Date du règlement
-                                    </label>
-                                    <input type="date" 
-                                           name="date_reglement" 
-                                           id="date_reglement" 
-                                           value="{{ old('date_reglement', date('Y-m-d')) }}" 
-                                           class="form-control">
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <!-- Fichier justificatif -->
-                                <div class="mb-3">
-                                    <label for="fichier_justificatif" class="form-label fw-bold">
-                                        Justificatif de paiement
-                                    </label>
-                                    <input type="file" 
-                                           name="fichier_justificatif" 
-                                           id="fichier_justificatif" 
-                                           class="form-control" 
-                                           accept=".pdf,.jpg,.jpeg,.png">
-                                    <small class="form-text text-muted">Format: PDF, JPG, PNG (max: 2MB)</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Section 3 : Commentaire -->
-                        <div class="row mb-4">
-                            <div class="col-md-12">
-                                <label for="commentaire" class="form-label fw-bold">
-                                    Commentaire
-                                </label>
-                                <textarea name="commentaire" 
-                                          id="commentaire" 
-                                          class="form-control" 
-                                          rows="3">{{ old('commentaire') }}</textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label for="mode" class="form-label fw-bold required">
+                                Mode de paiement
+                            </label>
+                            <select name="mode" id="mode" class="form-select" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="especes" {{ old('mode') == 'especes' ? 'selected' : '' }}>Espèces</option>
+                                <option value="cheque" {{ old('mode') == 'cheque' ? 'selected' : '' }}>Chèque</option>
+                                <option value="carte_bancaire" {{ old('mode') == 'carte_bancaire' ? 'selected' : '' }}>Carte bancaire</option>
+                                <option value="virement" {{ old('mode') == 'virement' ? 'selected' : '' }}>Virement</option>
+                                <option value="autre" {{ old('mode') == 'autre' ? 'selected' : '' }}>Autre</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="card-footer bg-light py-3 d-flex justify-content-end">
-                        <input type="hidden" name="cree_par" value="{{ auth()->id() }}">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i> Enregistrer le règlement
-                        </button>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="date_reglement" class="form-label fw-bold">
+                                Date du règlement
+                            </label>
+                            <input type="date" 
+                                   name="date_reglement" 
+                                   id="date_reglement" 
+                                   value="{{ old('date_reglement', date('Y-m-d')) }}" 
+                                   class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fichier_justificatif" class="form-label fw-bold">
+                                Justificatif de paiement
+                            </label>
+                            <input type="file" 
+                                   name="fichier_justificatif" 
+                                   id="fichier_justificatif" 
+                                   class="form-control" 
+                                   accept=".pdf,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">Format: PDF, JPG, PNG (max: 2MB)</small>
+                        </div>
                     </div>
-                </form>
-            </div>
+
+                    <!-- Commentaire -->
+                    <div class="col-12">
+                        <label for="commentaire" class="form-label fw-bold">
+                            Commentaire
+                        </label>
+                        <textarea name="commentaire" 
+                                  id="commentaire" 
+                                  class="form-control" 
+                                  rows="3">{{ old('commentaire') }}</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 pt-4 mt-3 border-top">
+                    <a href="{{ isset($commande) ? route('commandes.show', $commande->id) : route('reglements.index') }}" 
+                       class="btn btn-outline-secondary rounded-pill px-3">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-success rounded-pill px-4">
+                        <i class="fas fa-save me-2"></i>Enregistrer le règlement
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -293,4 +265,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<style>
+    .bg-light-blue {
+        background-color: #1e3a8a;
+    }
+    
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .form-control, .form-select, .input-group-text {
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+        border-color: #1e3a8a;
+    }
+    
+    .required:after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    .shadow-none {
+        box-shadow: none !important;
+    }
+</style>
 @endsection

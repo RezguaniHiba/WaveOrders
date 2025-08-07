@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Client;
 use Illuminate\Support\Carbon;
-use App\Models\Utilisateur;
+use App\Models\User;
 
 
 class ClientController extends Controller
@@ -38,7 +38,7 @@ class ClientController extends Controller
 }
 
     $clients = $query->with('utilisateur')->orderBy('nom')->paginate(15);
-    $commerciaux = Utilisateur::where('role', 'commercial')->where('actif', 1)->get();
+    $commerciaux = User::where('role', 'commercial')->where('actif', 1)->get();
     return view('clients.index', compact('clients', 'commerciaux'));
 }
 
@@ -50,7 +50,7 @@ class ClientController extends Controller
         $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
         $commerciaux = [];
         if (auth()->user()->role === 'admin') {
-            $commerciaux = Utilisateur::where('role', 'commercial')->get();
+            $commerciaux = User::where('role', 'commercial')->get();
         }
         return view('clients.create', compact('routePrefix', 'commerciaux'));
     }
@@ -131,7 +131,7 @@ public function show(Client $client)
         }
         $commerciaux = [];
         if (auth()->user()->role === 'admin') {
-        $commerciaux = Utilisateur::where('role', 'commercial')->where('actif', 1)->get();
+        $commerciaux = User::where('role', 'commercial')->where('actif', 1)->get();
         }
         $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
          return view('clients.edit', compact('client', 'commerciaux', 'routePrefix'));

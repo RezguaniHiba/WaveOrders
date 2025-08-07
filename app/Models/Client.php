@@ -58,7 +58,7 @@ class Client extends Model
 
 	public function utilisateur()
 	{
-		return $this->belongsTo(Utilisateur::class, 'commercial_id');
+		return $this->belongsTo(User::class, 'commercial_id');
 	}
 
 	public function commandes()

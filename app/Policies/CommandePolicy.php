@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Commande;
 use App\Models\User;
+
 use Illuminate\Auth\Access\Response;
 
 class CommandePolicy
@@ -21,17 +22,11 @@ class CommandePolicy
      */
     public function view(User $user, Commande $commande): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        if ($user->role === 'commercial') {
-            return $commande->commercial_id === $user->id
-                || $commande->cree_par === $user->id;
-        }
-
-        return false;
+        return $user->role === 'admin'
+            || $commande->commercial_id === $user->id
+            || $commande->cree_par === $user->id;
     }
+
 
     /**
      * Determine whether the user can create models.

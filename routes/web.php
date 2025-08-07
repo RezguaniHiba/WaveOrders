@@ -57,12 +57,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{client}', [ClientController::class, 'update'])->name('update');
             Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
         });
-        // Règlements (édition/suppression uniquement pour admin)
-         Route::prefix('reglements')->name('reglements.')->group(function () {
-          
-            Route::delete('/{reglement}', [ReglementController::class, 'destroy'])->name('destroy');
-        });
-
     });
 
     // Commercial uniquement
@@ -97,15 +91,13 @@ Route::middleware(['auth'])->group(function () {
             //Route::put('/{reglement}', [ReglementController::class, 'update'])->name('update');
         });
 
-
-            // Création spécifique à une commande
-        Route::prefix('commandes/{commande}/reglements')->group(function () {
-          // Route::get('/create', [ReglementController::class, 'create'])->name('commandes.reglements.create');
-           // Route::post('/', [ReglementController::class, 'store'])->name('commandes.reglements.store');
-            Route::get('/', [ReglementController::class, 'parCommande'])->name('commandes.reglements.index');
-        });
-        Route::get('/commandes/{commande}/reglements/create', [ReglementController::class, 'create'])
-     ->name('commandes.reglements.create');
+        Route::resource('reglements', ReglementController::class);
+        // Pour les règlements liés aux commandes
+    Route::prefix('commandes/{commande}/reglements')->group(function() {
+        Route::get('/', [ReglementController::class, 'parCommande'])->name('commandes.reglements.index');
+        Route::get('/create', [ReglementController::class, 'create'])->name('commandes.reglements.create');
+        Route::post('/', [ReglementController::class, 'store'])->name('commandes.reglements.store');
+    });
 
 
 });
