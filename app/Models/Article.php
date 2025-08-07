@@ -65,7 +65,7 @@ class Article extends Model
 		'famille_id'
 	];
 
-	public function familles_article()
+	public function famille()
 	{
 		return $this->belongsTo(FamillesArticle::class, 'famille_id');
 	}
@@ -73,5 +73,14 @@ class Article extends Model
 	public function lignes_commandes()
 	{
 		return $this->hasMany(LignesCommande::class);
+	}
+	public function getPrixTtcAttribute()
+	{
+		return $this->prix_ht * (1 + $this->taux_tva/100);
+	}
+//calcul de stock réel dispo
+	public function getStockReelAttribute()
+	{
+		return $this->stock_disponible - $this->stock_reserve;
 	}
 }

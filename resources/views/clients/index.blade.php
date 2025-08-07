@@ -13,7 +13,7 @@
         @endphp
         <div class="d-flex gap-3 flex-wrap">
             <form method="GET" action="{{ route($routePrefix . 'index') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                <div class="input-group input-group-sm" style="width: 180px;">
+                <div class="input-group input-group-sm" style="width: 250px;">
                     <span class="input-group-text"><i class="fas fa-search"></i></span>
                     <input type="text" name="search" class="form-control form-select-sm" placeholder="Rechercher..." value="{{ request('search') }}">
                 </div>

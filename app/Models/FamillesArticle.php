@@ -38,7 +38,7 @@ class FamillesArticle extends Model
 		'parent_id'
 	];
 
-	public function familles_article()
+	public function parent()
 	{
 		return $this->belongsTo(FamillesArticle::class, 'parent_id');
 	}
@@ -48,8 +48,43 @@ class FamillesArticle extends Model
 		return $this->hasMany(Article::class, 'famille_id');
 	}
 
-	public function familles_articles()
+	public function enfants()
 	{
 		return $this->hasMany(FamillesArticle::class, 'parent_id');
 	}
+	public function cheminComplet($separator = ' > ')
+	{
+		$chemin = [$this->libelle];
+		$parent = $this->parent;
+
+		while ($parent) {
+			array_unshift($chemin, $parent->libelle);
+			$parent = $parent->parent;
+		}
+
+		return implode($separator, $chemin);
+	}
+	public function getAllDescendantIds()
+{
+    $ids = collect();
+
+    foreach ($this->enfants as $enfant) {
+        $ids->push($enfant->id);
+        $ids = $ids->merge($enfant->getAllDescendantIds());
+    }
+
+    return $ids;
+}
+	public function hasDescendantMatching($search)
+	{
+		foreach ($this->enfants as $enfant) {
+			if (str_contains(strtolower($enfant->libelle), strtolower($search)) ||
+				str_contains(strtolower($enfant->code_wavesoft), strtolower($search)) ||
+				$enfant->hasDescendantMatching($search)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('remise_percent', 5)->default(0);
             $table->decimal('montant_ht', 12)->nullable()->storedAs('(((`quantite` * `prix_unitaire_ht`) * (100 - `remise_percent`)) / 100)');
             $table->decimal('montant_tva', 12)->nullable()->storedAs('(((((`quantite` * `prix_unitaire_ht`) * (100 - `remise_percent`)) / 100) * `taux_tva`) / 100)');
-            $table->enum('statut', ['en_attente', 'reserve', 'en_consigne', 'prepare', 'livre', 'annule'])->default('en_attente')->index('idx_lignes_statut');
+            $table->enum('statut', ['en_attente', 'reserve', 'prepare', 'livre', 'annule'])->default('en_attente')->index('idx_lignes_statut');
             $table->string('wavesoft_ligne_id', 20)->nullable();
         });
     }

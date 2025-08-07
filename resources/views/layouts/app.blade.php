@@ -21,40 +21,62 @@
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <a class="navbar-brand" href="#">🧾 Gestion Commandes</a>
+        <a class="navbar-brand" href="#">🧾 WaveOrders</a>
         <div class="ml-auto">
             <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-light">Déconnexion</a>
         </div>
     </nav>
 
     <main class="container">
-            {{-- Messages flash (succès ou erreur) --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
+                    {{-- Messages flash (succès ou erreur) --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center py-3 px-4 border-0 shadow-sm" role="alert" style="background-color: #f0faf1; border-left: 4px solid #28a745;">
+                <i class="fas fa-check-circle me-3 text-success"></i>
+                <div class="flex-grow-1">
+                    {{ session('success') }}
+                </div>
+                <button type="button" class="close ms-3" data-dismiss="alert" aria-label="Fermer" style="background: none; border: none; font-size: 1.5rem; line-height: 1; opacity: 0.7;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+      {{-- Erreur de validation detecter lors de validation de formulaire via validate les erreur seront stocker dans $errors--}}
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show d-flex py-3 px-4 border-0 shadow-sm" role="alert" style="background-color: #fdf3f3; border-left: 4px solid #dc3545;">
+                <i class="fas fa-exclamation-circle me-3 text-danger align-self-start mt-1"></i>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>Erreur:</strong>
+                        <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Fermer" style="background: none; border: none; font-size: 1.5rem; line-height: 1; opacity: 0.7;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <ul class="mb-0 ps-3" style="list-style-type: disc;">
+                        @foreach ($errors->all() as $error)
+                            <li class="mb-1">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+{{--Erreur personalise ->logique metier return avec par exzmple redirect()->back()->with('error', 'msg d'err...');--}}
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center py-3 px-4 border-0 shadow-sm" role="alert" style="background-color: #fdf3f3; border-left: 4px solid #dc3545;">
+                <i class="fas fa-exclamation-triangle me-3 text-danger"></i>
+                <div class="flex-grow-1">
+                    {{ session('error') }}
+                </div>
+                <button type="button" class="close ms-3" data-dismiss="alert" aria-label="Fermer" style="background: none; border: none; font-size: 1.5rem; line-height: 1; opacity: 0.7;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
 
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif 
         @yield('content')
     </main>
 
     <footer class="text-center text-muted mt-5 mb-3">
-        &copy; {{ date('Y') }} - MonApp. Tous droits réservés.
+       {{-- &copy; {{ date('Y') }} - MonApp. Tous droits réservés.--}}
     </footer>
 
     <!-- JS -->

@@ -19,8 +19,8 @@
                     <a href="{{ route($routePrefix . 'index') }}" class="btn btn-outline-secondary rounded-pill px-3">
                         <i class="fas fa-times me-2"></i>Annuler
                     </a>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
-                        <i class="fas fa-save me-2"></i>Mettre à jour
+                    <button type="submit" class="btn btn-success rounded-pill px-4">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
                     </button>
                 </div>
             </form>

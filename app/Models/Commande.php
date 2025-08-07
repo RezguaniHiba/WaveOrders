@@ -106,6 +106,15 @@ class Commande extends Model
 	{
 		return !in_array($this->statut, ['complètement_livree', 'annulee']);
 	}
+		public function reglements()
+	{
+		return $this->hasMany(Reglement::class);
+	}
+	public function getMontantRestantAttribute()
+
+	{
+    return $this->montant_ttc - $this->reglements()->sum('montant');
+	}
 
 
 }

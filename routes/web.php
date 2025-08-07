@@ -6,6 +6,11 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\Commercial\CommandeController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\FamillesArticleController;
+use App\Http\Controllers\ReglementController;
+
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -52,6 +57,11 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{client}', [ClientController::class, 'update'])->name('update');
             Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
         });
+        // Règlements (édition/suppression uniquement pour admin)
+         Route::prefix('reglements')->name('reglements.')->group(function () {
+          
+            Route::delete('/{reglement}', [ReglementController::class, 'destroy'])->name('destroy');
+        });
 
     });
 
@@ -72,6 +82,30 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-// --- Commandes (accessibles aux deux rôles) ---
-    Route::resource('commandes', CommandeController::class);
+    // --- Routes partagées (admin + commercial) ---
+        Route::resource('commandes', CommandeController::class);
+        Route::resource('familles-articles', FamillesArticleController::class);
+        Route::resource('articles', ArticleController::class);
+
+           // --- Règlements partagés (affichage + création) ---
+        Route::prefix('reglements')->name('reglements.')->group(function () {
+            Route::get('/', [ReglementController::class, 'index'])->name('index');
+            Route::get('/create', [ReglementController::class, 'create']) ->name('create');
+            Route::post('/', [ReglementController::class, 'store'])->name('store');
+            Route::get('/{reglement}', [ReglementController::class, 'show'])->name('show');
+
+            //Route::put('/{reglement}', [ReglementController::class, 'update'])->name('update');
+        });
+
+
+            // Création spécifique à une commande
+        Route::prefix('commandes/{commande}/reglements')->group(function () {
+          // Route::get('/create', [ReglementController::class, 'create'])->name('commandes.reglements.create');
+           // Route::post('/', [ReglementController::class, 'store'])->name('commandes.reglements.store');
+            Route::get('/', [ReglementController::class, 'parCommande'])->name('commandes.reglements.index');
+        });
+        Route::get('/commandes/{commande}/reglements/create', [ReglementController::class, 'create'])
+     ->name('commandes.reglements.create');
+
+
 });

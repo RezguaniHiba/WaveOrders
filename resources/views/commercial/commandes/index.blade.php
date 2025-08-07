@@ -53,7 +53,8 @@
                             <th class="text-center">Client</th>
                             <th class="text-center">Date</th>
                             <th class="text-center">Total TTC</th>
-                            <th class="text-center">Statut</th>
+                            <th class="text-center">État Paiement</th>
+                            <th class="text-center">Statut de commande</th>
                             <th class="text-center">Exporté</th>
                              @if(auth()->user()->role === 'admin')
                                     <th class="text-center">Créée par</th>
@@ -81,6 +82,23 @@
                             <td class="text-center fw-bold text-nowrap">
                                 {{ number_format($commande->montant_ttc, 2, ',', ' ') }} DH
                             </td>
+                            <td class="text-center">
+                                @php
+                                    $totalRegle = $commande->reglements->sum('montant');
+                                    $etatPaiement = 'Non payé';
+                                    $couleurPaiement = 'danger';
+
+                                    if ($totalRegle >= $commande->montant_ttc) {
+                                        $etatPaiement = 'Paiement complet';
+                                        $couleurPaiement = 'success';
+                                    } elseif ($totalRegle > 0) {
+                                        $etatPaiement = 'Paiement partiel';
+                                        $couleurPaiement = 'warning';
+                                    }
+                                @endphp
+                                <span class="badge rounded-pill bg-{{ $couleurPaiement }}" data-bs-toggle="tooltip" title="État : {{ $etatPaiement}}">{{ $etatPaiement }}</span>
+                            </td>
+
                             <td class="text-center">
                                 <span class="badge rounded-pill bg-{{ $couleurs[$commande->statut] ?? 'dark' }}" 
                                     data-bs-toggle="tooltip" title="Statut : {{ ucfirst($commande->statut) }}">
@@ -118,6 +136,13 @@
                                        data-bs-toggle="tooltip">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
+                                    <a href="{{ route('commandes.reglements.index', $commande->id) }}"
+                                        class="btn btn-sm btn-outline-success rounded-circle action-btn"
+                                        title="Voir les règlements de cette commande"
+                                        data-bs-toggle="tooltip">
+                                        <i class="fas fa-money-check-alt"></i>
+                                    </a>
+
                                     <form action="{{ route('commandes.destroy', $commande->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')

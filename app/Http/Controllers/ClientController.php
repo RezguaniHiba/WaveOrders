@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Client;
 use Illuminate\Support\Carbon;
+use App\Models\Utilisateur;
 
 
 class ClientController extends Controller
@@ -12,21 +13,34 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        if (auth()->user()->role === 'commercial') {
-         // Le commercial ne voit que ses clients
-        $clients = Client::where('commercial_id', auth()->id())
-                         ->orderBy('nom')
-                         ->paginate(15);
-    } else {
-        // L'admin voit tous les clients
-        $clients = Client::orderBy('nom')
-                         ->paginate(15);
+  public function index(Request $request)
+{
+    $query = Client::query();
+    // Filtre par commercial (pour les commerciaux)
+    if (auth()->user()->role === 'commercial') {
+        $query->where('commercial_id', auth()->id());
+    }
+    
+    // Gestion de la recherche
+    if ($request->filled('search')) {
+        $searchTerm = trim(strtolower($request->search));    //La methode trim pour eliminer les espaces  et strtolower pour convertit la chaine en minuscule pour rendre la recherche insensible à la casse
+        $query->where(function($q) use ($searchTerm) {
+            $q->whereRaw('LOWER(nom) LIKE ?', ["%{$searchTerm}%"])
+            ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchTerm}%"])
+            ->orWhereRaw('LOWER(telephone) LIKE ?', ["%{$searchTerm}%"])
+            ->orWhereRaw('LOWER(ville) LIKE ?', ["%{$searchTerm}%"]);
+        });
     }
 
-    return view('clients.index', compact('clients'));
-    }
+    // Filtre par commercial (pour les admins)
+   if (auth()->user()->role === 'admin' && filled($request->commercial_id)) {
+    $query->where('commercial_id', $request->commercial_id);
+}
+
+    $clients = $query->with('utilisateur')->orderBy('nom')->paginate(15);
+    $commerciaux = Utilisateur::where('role', 'commercial')->where('actif', 1)->get();
+    return view('clients.index', compact('clients', 'commerciaux'));
+}
 
     /**
      * Show the form for creating a new resource.
@@ -34,7 +48,11 @@ class ClientController extends Controller
     public function create()
     {
         $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
-        return view('clients.create', compact('routePrefix'));  
+        $commerciaux = [];
+        if (auth()->user()->role === 'admin') {
+            $commerciaux = Utilisateur::where('role', 'commercial')->get();
+        }
+        return view('clients.create', compact('routePrefix', 'commerciaux'));
     }
 
 
@@ -51,30 +69,40 @@ public function store(Request $request)
         'ville' => 'nullable|string|max:100',
         'code_postal' => 'nullable|string|max:20',
         'pays' => 'nullable|string|max:100',
+        'commercial_id' => 'nullable|exists:utilisateurs,id', // au cas où admin l’envoie
     ]);
 
-    $data = $request->all();
-    $data['commercial_id'] = auth()->id(); //  Ajout de l'ID du commercial connecté
-    $data['date_creation'] = Carbon::now(); // ce champ est géré manuellement
-// Vérifie si un client a déjà le même email ou le même téléphone
-   $exists = Client::where(function ($query) use ($request) {
-         $query->where('email', $request->email)
-            ->orWhere('telephone', $request->telephone);
+    // Vérifie si un client avec le même email ou téléphone existe déjà
+    $exists = Client::where(function ($query) use ($request) {
+        if ($request->filled('email')) {
+            $query->orWhere('email', $request->email);
+        }
+        if ($request->filled('telephone')) {
+            $query->orWhere('telephone', $request->telephone);
+        }
     })->exists();
 
     if ($exists) {
         return redirect()->back()
-                ->withErrors(['email' => 'Un client avec cet email ou ce téléphone existe déjà.'])
-                ->withInput();
+            ->withErrors(['email' => 'Un client avec cet email ou ce téléphone existe déjà.'])
+            ->withInput();
     }
 
-    //Creation de client
-    $client = Client::create($data);
-    // Redirection selon rôle
+    // Préparation des données
+    $data = $request->all();
+    $data['commercial_id'] = auth()->user()->role === 'admin'
+        ? $request->input('commercial_id')
+        : auth()->id();
+
+    $data['date_creation'] = now(); // Carbon::now() est équivalent
+
+    // Création
+    Client::create($data);
+
+    // Redirection
     $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
     return redirect()->route($routePrefix . 'index')->with('success', 'Client créé avec succès.');
 }
-
 
     /**
      * Display the specified resource.
@@ -85,7 +113,9 @@ public function show(Client $client)
     if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
         abort(403, 'Accès refusé');
     }
-    return view('clients.show', compact('client'));
+        $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
+
+    return view('clients.show', compact('client','routePrefix'));
 }
 
 
@@ -99,8 +129,12 @@ public function show(Client $client)
         if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
             abort(403, 'Accès refusé');
         }
-
-        return view('clients.edit', compact('client')); 
+        $commerciaux = [];
+        if (auth()->user()->role === 'admin') {
+        $commerciaux = Utilisateur::where('role', 'commercial')->where('actif', 1)->get();
+        }
+        $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
+         return view('clients.edit', compact('client', 'commerciaux', 'routePrefix'));
     }
 
 
@@ -109,7 +143,12 @@ public function show(Client $client)
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $client = Client::findOrFail($id);
+        // Vérification d'accès pour la mise à jour
+        if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
+            abort(403, 'Accès refusé');
+        }
+        $rules=[
             'nom' => 'required|string|max:255',
             'email' => 'nullable|email',
             'telephone' => 'nullable|string|max:20',
@@ -117,29 +156,34 @@ public function show(Client $client)
             'ville' => 'nullable|string|max:100',
             'code_postal' => 'nullable|string|max:20',
             'pays' => 'nullable|string|max:100',
-        ]);
-
-        $client = Client::findOrFail($id);
-         // Vérification d'accès pour la mise à jour
-        if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
-            abort(403, 'Accès refusé');
+        ];
+        if (auth()->user()->role === 'admin') {
+            $rules['commercial_id'] = 'nullable|exists:utilisateurs,id';
         }
+        $request->validate($rules);
         // Vérification : un autre client a-t-il le même email ou téléphone ?
         $exists = Client::where(function ($query) use ($request) {
-                            $query->where('email', $request->email)
-                                ->orWhere('telephone', $request->telephone);
-                        })
-                        ->where('id', '!=', $id) // Exclut le client actuel
-                        ->exists();
+                if ($request->filled('email')) {
+                    $query->orWhere('email', $request->email);
+                }
+                if ($request->filled('telephone')) {
+                    $query->orWhere('telephone', $request->telephone);
+                }
+            })->where('id', '!=', $id)->exists(); // Exclut le client actuel
 
         if ($exists) {
             return redirect()->back()
                 ->withErrors(['email' => 'Un autre client utilise déjà cet email ou ce téléphone.'])
                 ->withInput();
         }
-
-        $client->update($request->all());
-            // Redirection selon rôle
+        $data = $request->all();
+        // Mise à jour du commercial_id uniquement si admin
+        if (auth()->user()->role !== 'admin') {
+            unset($data['commercial_id']); // empêche un commercial de changer ce champ
+        }
+        $data['date_maj'] = Carbon::now();
+        $client->update($data);
+        // Redirection selon rôle
         $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
         return redirect()->route($routePrefix . 'index')->with('success', 'Client mis à jour.');
     }
