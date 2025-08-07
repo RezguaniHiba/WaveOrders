@@ -69,19 +69,15 @@
                         <a href="{{ route('reglements.show', $reglement->id) }}" class="text-blue-600 hover:text-blue-800" title="Voir">
                             <i class="fas fa-eye"></i>
                         </a>
-                        @can('update', $reglement)
                         <a href="{{ route('reglements.edit', $reglement->id) }}" class="text-yellow-600 hover:text-yellow-800" title="Modifier">
                             <i class="fas fa-edit"></i>
                         </a>
-                        @endcan
-                        @can('delete', $reglement)
                         <form action="{{ route('reglements.destroy', $reglement->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirmer la suppression ?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-800" title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
-                        @endcan
                     </td>
                 </tr>
                 @empty
