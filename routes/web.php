@@ -57,6 +57,8 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{client}', [ClientController::class, 'update'])->name('update');
             Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
         });
+        //Route pour gestion des User
+        Route::resource('users', UserController::class);
     });
 
     // Commercial uniquement

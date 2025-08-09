@@ -3,7 +3,7 @@
 @section('title', isset($commande) ? "Règlements - Commande #{$commande->numero}" : 'Liste des règlements')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-3 px-md-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="mb-0">
             <i class="fas fa-money-bill-wave me-2"></i>
@@ -34,34 +34,34 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 small">
                     <thead class="table-light">
                         <tr>
                             @if(!isset($commande))
-                                <th class="text-center">Commande</th>
+                                <th class="text-center text-nowrap">Commande</th>
                             @endif
-                            <th class="text-center">Date</th>
-                            <th class="text-center">Montant</th>
-                            <th class="text-center">Mode de paiement</th>
-                            <th class="text-center">Type de facturation</th>
-                            <th class="text-center">Saisi par</th>
-                            <th class="text-center">Actions</th>
+                            <th class="text-center text-nowrap">Date</th>
+                            <th class="text-center text-nowrap">Montant</th>
+                            <th class="text-center text-nowrap">Mode</th>
+                            <th class="text-center text-nowrap">Type facturation</th>
+                            <th class="text-center text-nowrap">Saisi par</th>
+                            <th class="text-center text-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($reglements as $reglement)
                         <tr>
                             @if(!isset($commande))
-                                <td class="text-center">
+                                <td class="text-center text-nowrap">
                                     <a href="{{ route('commandes.show', $reglement->commande_id) }}" class="text-primary text-decoration-none">
                                         #{{ $reglement->commande->numero }}
                                     </a>
                                 </td>
                             @endif
-                            <td class="text-center">{{ $reglement->date_reglement->format('d/m/Y') }}</td>
-                            <td class="fw-bold text-center">{{ number_format($reglement->montant, 2, ',', ' ') }} DH</td>
-                            <td class="text-center">
-                                <span class="badge bg-{{ [
+                            <td class="text-center text-nowrap">{{ $reglement->date_reglement->format('d/m/Y') }}</td>
+                            <td class="fw-bold text-center text-nowrap">{{ number_format($reglement->montant, 2, ',', ' ') }} DH</td>
+                            <td class="text-center text-nowrap">
+                                <span class="badge rounded-pill bg-{{ [
                                     'especes' => 'primary',
                                     'cheque' => 'success',
                                     'carte_bancaire' => 'info',
@@ -70,8 +70,8 @@
                                     {{ $reglement->mode_libelle }}
                                 </span>
                             </td>
-                            <td class="text-center">{{ $reglement->type_facturation_libelle }}</td>
-                            <td class="text-center">{{ $reglement->utilisateur->nom }}</td>
+                            <td class="text-center text-nowrap">{{ $reglement->type_facturation_libelle }}</td>
+                            <td class="text-center text-nowrap">{{ $reglement->utilisateur->nom }}</td>
                             <td class="text-center text-nowrap">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{{ route('reglements.show', $reglement->id) }}" 
@@ -120,7 +120,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Activer tous les tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(function (tooltipTriggerEl) {
             new bootstrap.Tooltip(tooltipTriggerEl);
@@ -129,6 +128,16 @@
 </script>
 
 <style>
+    main.container {
+        max-width: 100%;
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+
+    .table {
+        font-size: 0.875rem;
+    }
+
     .action-btn {
         width: 32px;
         height: 32px;
@@ -137,8 +146,25 @@
         justify-content: center;
     }
     
+    .action-btn i {
+        font-size: 0.75rem;
+    }
+    
     .table th {
         white-space: nowrap;
+    }
+    
+    .badge {
+        min-width: 70px;
+        font-weight: 500;
+        padding: 4px 8px;
+    }
+
+    .text-truncate {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>
 @endsection

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-3 px-md-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="mb-0">
             <i class="fas fa-folder-tree me-2"></i>Liste des familles d'articles

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-3 px-md-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="mb-0">
             <i class="fas fa-boxes me-2"></i>Liste des commandes
@@ -41,71 +41,73 @@
             </a>
         </div>
     </div>
-{{-- Si des commandes sont disponibles on affiche le table de liste de cmd--}}
+
     @if($commandes->count() > 0)
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 small">
                     <thead class="table-light">
                         <tr>
-                            <th class="text-center">Numéro de la commande</th>
-                            <th class="text-center">Client</th>
-                            <th class="text-center">Date</th>
-                            <th class="text-center">Total TTC</th>
-                            <th class="text-center">État Paiement</th>
-                            <th class="text-center">Statut de commande</th>
-                            <th class="text-center">Exporté</th>
-                             @if(auth()->user()->role === 'admin')
-                                    <th class="text-center">Créée par</th>
-                             @endif
-                            <th class="text-center">Actions</th>
+                            <th class="text-center text-nowrap">N° Commande</th>
+                            <th class="text-center text-nowrap">Client</th>
+                            <th class="text-center text-nowrap">Date</th>
+                            <th class="text-center text-nowrap">Total TTC</th>
+                            <th class="text-center text-nowrap">Paiement</th>
+                            <th class="text-center text-nowrap">Statut</th>
+                            <th class="text-center text-nowrap">Exporté</th>
+                            <th class="text-center text-nowrap">Règlements</th>
+                            @if(auth()->user()->role === 'admin')
+                                <th class="text-center text-nowrap">Créée par</th>
+                            @endif
+                            <th class="text-center text-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                      @php
-                    $couleurs = [
-                            'brouillon' => 'secondary',
-                            'consignation' => 'warning',
-                            'reserve' => 'info',
-                            'partiellement_livree' => 'primary',
-                            'complètement_livree' => 'success',
-                            'annulee' => 'danger'
-                        ];
-                    @endphp
+                        @php
+                            $couleurs = [
+                                'brouillon' => 'secondary',
+                                'consignation' => 'warning',
+                                'reserve' => 'info',
+                                'partiellement_livree' => 'primary',
+                                'complètement_livree' => 'success',
+                                'annulee' => 'danger'
+                            ];
+                        @endphp
 
                         @foreach ($commandes as $commande)
                         <tr>
-                            <td class="text-center fw-bold">{{ $commande->numero }}</td>
-                            <td>{{ $commande->client->nom ?? 'Inconnu' }}</td>
-                            <td class="text-center">{{ $commande->date_commande->format('d/m/Y') }}</td>
+                            <td class="text-center fw-bold text-nowrap">{{ $commande->numero }}</td>
+                            <td class="text-truncate" style="max-width: 150px;">{{ $commande->client->nom ?? 'Inconnu' }}</td>
+                            <td class="text-center text-nowrap">{{ $commande->date_commande->format('d/m/Y') }}</td>
                             <td class="text-center fw-bold text-nowrap">
                                 {{ number_format($commande->montant_ttc, 2, ',', ' ') }} DH
                             </td>
-                            <td class="text-center">
+                            <td class="text-center text-nowrap">
                                 @php
                                     $totalRegle = $commande->reglements->sum('montant');
                                     $etatPaiement = 'Non payé';
                                     $couleurPaiement = 'danger';
 
                                     if ($totalRegle >= $commande->montant_ttc) {
-                                        $etatPaiement = 'Paiement complet';
+                                        $etatPaiement = 'Complet';
                                         $couleurPaiement = 'success';
                                     } elseif ($totalRegle > 0) {
-                                        $etatPaiement = 'Paiement partiel';
+                                        $etatPaiement = 'Partiel';
                                         $couleurPaiement = 'warning';
                                     }
                                 @endphp
-                                <span class="badge rounded-pill bg-{{ $couleurPaiement }}" data-bs-toggle="tooltip" title="État : {{ $etatPaiement}}">{{ $etatPaiement }}</span>
+                                <span class="badge rounded-pill bg-{{ $couleurPaiement }}" data-bs-toggle="tooltip" title="{{ $etatPaiement }}">
+                                    {{ $etatPaiement }}
+                                </span>
                             </td>
-
-                            <td class="text-center">
+                            <td class="text-center text-nowrap">
                                 <span class="badge rounded-pill bg-{{ $couleurs[$commande->statut] ?? 'dark' }}" 
-                                    data-bs-toggle="tooltip" title="Statut : {{ ucfirst($commande->statut) }}">
+                                    data-bs-toggle="tooltip" title="{{ ucfirst($commande->statut) }}">
                                     {{ ucfirst($commande->statut) }}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center text-nowrap">
                                 @if($commande->wavesoft_piece_id)
                                     <span class="text-success" data-bs-toggle="tooltip" title="Commande exportée">
                                         <i class="fas fa-check-circle"></i>
@@ -115,6 +117,13 @@
                                         <i class="fas fa-times-circle"></i>
                                     </span>
                                 @endif
+                            </td>
+                            <td class="text-center text-nowrap">
+                                <a href="{{ route('commandes.reglements.index', $commande->id) }}"
+                                    class="btn btn-sm btn-link text-decoration-none"
+                                    title="Voir les règlements">
+                                    {{ $commande->reglements->count() }} règlement(s)
+                                </a>
                             </td>
                             @if(auth()->user()->role === 'admin')
                             <td class="text-center">
@@ -135,12 +144,6 @@
                                        title="Modifier"
                                        data-bs-toggle="tooltip">
                                         <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a href="{{ route('commandes.reglements.index', $commande->id) }}"
-                                        class="btn btn-sm btn-outline-success rounded-circle action-btn"
-                                        title="Voir les règlements de cette commande"
-                                        data-bs-toggle="tooltip">
-                                        <i class="fas fa-money-check-alt"></i>
                                     </a>
 
                                     <form action="{{ route('commandes.destroy', $commande->id) }}" method="POST" style="display:inline;">
@@ -164,7 +167,6 @@
         </div>
     </div>
 
-    {{-- Pagination avec conservation de filtre --}}
     <div class="mt-3 d-flex justify-content-center">
         {{ $commandes->withQueryString()->links() }}
     </div>
@@ -175,10 +177,9 @@
     </div>
     @endif
 </div>
-{{-- Activation des tooltips Bootstrap --}}
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Activer tous les tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(function (tooltipTriggerEl) {
             new bootstrap.Tooltip(tooltipTriggerEl);
@@ -187,12 +188,26 @@
 </script>
 
 <style>
+    main.container {
+        max-width: 100%;
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+
+    .table {
+        font-size: 0.875rem;
+    }
+
     .action-btn {
         width: 32px;
         height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+   
+    .action-btn i {
+        font-size: 0.75rem;
     }
     
     .table th {
@@ -201,6 +216,13 @@
     
     .badge {
         min-width: 80px;
+    }
+
+    .text-truncate {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>
 @endsection

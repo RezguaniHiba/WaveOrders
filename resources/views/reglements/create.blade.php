@@ -194,7 +194,7 @@
                         <textarea name="commentaire" 
                                   id="commentaire" 
                                   class="form-control" 
-                                  rows="3">{{ old('commentaire') }}</textarea>
+                                  rows="1">{{ old('commentaire') }}</textarea>
                     </div>
                 </div>
 

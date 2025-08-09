@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-3 px-md-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="mb-0">
             <i class="fas fa-boxes me-2"></i>Liste des articles
@@ -46,21 +46,21 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 small">
                     <thead class="table-light">
                         <tr>
-                            <th>Référence</th>
-                            <th>Désignation</th>
-                            <th>Prix HT</th>
-                            <th>Prix TTC</th>
-                            <th>Stocks</th>
-                            <th class="text-center">Actions</th>
+                            <th class="text-nowrap text-center">Référence</th>
+                            <th class="text-nowrap text-center">Désignation</th>
+                            <th class="text-nowrap text-center">Prix HT</th>
+                            <th class="text-nowrap text-center">Prix TTC</th>
+                            <th class="text-nowrap text-center">Stocks</th>
+                            <th class="text-center text-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($articles as $article)
                         <tr>
-                            <td class="fw-bold">{{ $article->reference }}</td>
+                            <td class="fw-bold text-nowrap text-center">{{ $article->reference }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     {{ $article->designation }}
@@ -68,17 +68,17 @@
                                         <span class="badge bg-danger ms-2">Inactif</span>
                                     @endif
                                 </div>
-                                <small class="text-muted">
+                                <small class="text-muted text-center">
                                     {{ optional($article->famille)->cheminComplet() }}
                                 </small>
                             </td>
-                            <td>{{ number_format($article->prix_ht, 2, ',', ' ') }} DH</td>
-                            <td>{{ number_format($article->prix_ttc, 2, ',', ' ') }} DH</td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <span class="badge bg-success">Dispo: {{ $article->stock_disponible }}</span>
-                                    <span class="badge bg-warning text-dark">Réservé: {{ $article->stock_reserve }}</span>
-                                    <span class="badge bg-info">Consigné: {{ $article->stock_consigne }}</span>
+                            <td class="text-center text-nowrap">{{ number_format($article->prix_ht, 2, ',', ' ') }} DH</td>
+                            <td class="text-center text-nowrap">{{ number_format($article->prix_ttc, 2, ',', ' ') }} DH</td>
+                            <td class="gap-2 text-nowrap text-center">
+                                <div class="text-center text-nowrap">
+                                    <span class="badge bg-success text-center">Dispo: {{ $article->stock_disponible }}</span>
+                                    <span class="badge bg-warning text-dark text-center">Réservé: {{ $article->stock_reserve }}</span>
+                                    <span class="badge bg-info text-center">Consigné: {{ $article->stock_consigne }}</span>
                                 </div>
                             </td>
                             <td class="text-center text-nowrap">
@@ -90,7 +90,7 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ route('articles.edit', $article) }}" 
-                                       class="btn btn-sm btn-outline-warning rounded-circle action-btn" 
+                                       class="btn btn-sm btn-outline-warning rounded-circle action-btn text-center" 
                                        title="Modifier"
                                        data-bs-toggle="tooltip">
                                         <i class="fas fa-pencil-alt"></i>
@@ -99,7 +99,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
-                                                class="btn btn-sm btn-outline-danger rounded-circle action-btn" 
+                                                class="btn btn-sm btn-outline-danger rounded-circle action-btn text-center" 
                                                 title="Supprimer" 
                                                 onclick="return confirm('Confirmer la suppression ?')"
                                                 data-bs-toggle="tooltip">
@@ -140,12 +140,26 @@
 </script>
 
 <style>
+    main.container {
+        max-width: 100%;
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+
+    .table {
+        font-size: 0.875rem;
+    }
+
     .action-btn {
         width: 32px;
         height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    
+    .action-btn i {
+        font-size: 0.75rem;
     }
     
     .table th {
@@ -155,6 +169,14 @@
     .badge {
         font-weight: 500;
         padding: 4px 8px;
+        white-space: nowrap;
+    }
+
+    .text-truncate {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>
 @endsection

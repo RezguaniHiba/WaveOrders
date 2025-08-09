@@ -1,30 +1,28 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-3 px-md-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="mb-0">
             <i class="fas fa-users me-2"></i>Liste des clients
         </h3>
-         @php
-            // Détermine le préfixe des routes selon le rôle de l'utilisateur
+        @php
             $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
-            $colspan = auth()->user()->role === 'admin' ? 7 : 6;
         @endphp
         <div class="d-flex gap-3 flex-wrap">
             <form method="GET" action="{{ route($routePrefix . 'index') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                <div class="input-group input-group-sm" style="width: 250px;">
+                <div class="input-group input-group-sm" style="width: 200px;">
                     <span class="input-group-text"><i class="fas fa-search"></i></span>
                     <input type="text" name="search" class="form-control form-select-sm" placeholder="Rechercher..." value="{{ request('search') }}">
                 </div>
                 
                 @if(auth()->user()->role === 'admin')
-                <div class="input-group input-group-sm" style="width: 180px;">
+                <div class="input-group input-group-sm" style="width: 160px;">
                     <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
                     <select name="commercial_id" class="form-select form-select-sm">
-                        <option value="">Tous les commerciaux</option>
+                        <option value="">Tous commerciaux</option>
                        @foreach($commerciaux as $commercial)
-                            <option value="{{ $commercial->id }}"  @if(request('commercial_id') == (string)$commercial->id) selected @endif>
+                            <option value="{{ $commercial->id }}" @if(request('commercial_id') == (string)$commercial->id) selected @endif>
                                 {{ $commercial->nom }}
                             </option>
                         @endforeach
@@ -38,7 +36,7 @@
             </form>
 
             <a href="{{ route($routePrefix . 'create') }}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                <i class="fas fa-plus"></i> Nouveau client
+                <i class="fas fa-plus"></i> Nouveau
             </a>
         </div>
     </div>
@@ -47,33 +45,33 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-sm table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Nom complet</th>
-                            <th>Email</th>
-                            <th>Téléphone</th>
-                            <th>Ville</th>
+                            <th class="text-nowrap">Nom complet</th>
+                            <th class="text-nowrap">Email</th>
+                            <th class="text-nowrap">Téléphone</th>
+                            <th class="text-nowrap">Ville</th>
                             @if(auth()->user()->role === 'admin')
-                                <th>Commercial</th>
+                                <th class="text-nowrap">Commercial</th>
                             @endif
-                            <th>Date de création</th>
-                            <th class="text-center">Actions</th>
+                            <th class="text-nowrap">Création</th>
+                            <th class="text-center text-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($clients as $client)
                         <tr>
-                            <td class="fw-bold">{{ $client->nom }}</td>
-                            <td>{{ $client->email ?? '-' }}</td>
-                            <td>{{ $client->telephone ?? '-' }}</td>
-                            <td>{{ $client->ville ?? '-' }}</td>
+                            <td class="fw-bold text-truncate" style="max-width: 150px;">{{ $client->nom }}</td>
+                            <td class="text-truncate" style="max-width: 150px;" title="{{ $client->email ?? '-' }}">{{ $client->email ?? '-' }}</td>
+                            <td class="text-nowrap">{{ $client->telephone ?? '-' }}</td>
+                            <td class="text-nowrap">{{ $client->ville ?? '-' }}</td>
                             @if(auth()->user()->role === 'admin')
-                                <td>{{ $client->utilisateur->nom ?? '-' }}</td>
+                                <td class="text-truncate" style="max-width: 120px;">{{ $client->utilisateur->nom ?? '-' }}</td>
                             @endif
-                            <td>{{ $client->date_creation->format('d/m/Y') }}</td>
+                            <td class="text-nowrap">{{ $client->date_creation->format('d/m/y') }}</td>
                             <td class="text-center text-nowrap">
-                                <div class="d-flex justify-content-center gap-2">
+                                <div class="d-flex justify-content-center gap-1">
                                     <a href="{{ route($routePrefix . 'show', $client) }}" 
                                        class="btn btn-sm btn-outline-primary rounded-circle action-btn" 
                                        title="Voir"
@@ -107,22 +105,19 @@
         </div>
     </div>
 
-    {{-- Pagination avec conservation des filtres --}}
     <div class="mt-3 d-flex justify-content-center">
         {{ $clients->withQueryString()->links() }}
     </div>
 
     @else
-    <div class="alert alert-info text-center py-3">
-        <i class="fas fa-info-circle me-2"></i>Aucun client trouvé pour vos critères.
+    <div class="alert alert-info text-center py-2">
+        <i class="fas fa-info-circle me-1"></i>Aucun client trouvé
     </div>
     @endif
 </div>
 
-{{-- Activation des tooltips Bootstrap --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Activer tous les tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(function (tooltipTriggerEl) {
             new bootstrap.Tooltip(tooltipTriggerEl);
@@ -131,16 +126,45 @@
 </script>
 
 <style>
+    main.container {
+        max-width: 100%;
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
     .action-btn {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 0;
     }
     
-    .table th {
+    .action-btn i {
+        font-size: 0.75rem;
+    }
+    
+    .table th, .table td {
+        padding: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    .text-truncate {
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    @media (max-width: 768px) {
+        main.container-fluid {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
     }
 </style>
 @endsection

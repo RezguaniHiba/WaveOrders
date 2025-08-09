@@ -13,6 +13,6 @@ class IsAdmin
             return $next($request);
         }
 
-        abort(403, 'Accès interdit');
+        return redirect('/')->with('error', 'Accès non autorisé');
     }
 }

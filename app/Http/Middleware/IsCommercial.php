@@ -15,7 +15,7 @@ class IsCommercial
         if (Auth::check() && Auth::user()->role === 'commercial') {
             return $next($request);
         }
-
-        abort(403, 'Accès interdit');
+        return redirect('/')->with('error', 'Accès non autorisé');
+        //abort(403, 'Accès interdit');
     }
 }
