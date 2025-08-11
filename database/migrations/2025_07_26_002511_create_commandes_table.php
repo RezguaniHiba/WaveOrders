@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('cree_par')->nullable()->index('idx_commandes_createur');
             $table->dateTime('date_commande')->useCurrent();
             $table->date('date_livraison_prevue')->nullable();
-            $table->enum('statut', ['brouillon', 'consignation', 'reserve', 'livree', 'annulee'])->default('brouillon')->index('idx_commandes_statut');
+            $table->enum('statut', ['brouillon','en_cours_de_traitement','consignation','partiellement_livree','complètement_livree','annulee'])->default('brouillon')->index('idx_commandes_statut');
             $table->decimal('montant_ht', 12)->nullable()->default(0);
             $table->decimal('montant_tva', 12)->nullable()->default(0);
             $table->decimal('montant_ttc', 12)->nullable()->default(0);
