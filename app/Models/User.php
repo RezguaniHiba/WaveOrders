@@ -30,15 +30,20 @@ class User extends Authenticatable
 {
 	use Notifiable;
 	protected $table = 'utilisateurs';
+	public $timestamps = true;
+
+	const CREATED_AT = 'date_creation';
+    const UPDATED_AT = 'updated_at';
 
 	protected $casts = [
 		'actif' => 'bool',
-		'date_creation' => 'datetime'
+		'date_creation' => 'datetime',
+		'updated_at' => 'datetime'
 	];
 
 	protected $hidden = [
-		'mot_de_passe_hash'
-		];
+		'mot_de_passe_hash',
+	];
 
 	protected $fillable = [
 		'nom',
@@ -47,7 +52,8 @@ class User extends Authenticatable
 		'telephone',
 		'role',
 		'actif',
-		'date_creation'
+		'date_creation',
+		'mot_de_passe_hash',
 	];
 	public function getAuthPassword()
     {

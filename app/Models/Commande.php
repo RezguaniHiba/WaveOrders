@@ -77,7 +77,12 @@ class Commande extends Model
 		'date_export_wavesoft',
 		'date_maj'
 	];
-
+	const STATUTS_VALIDES = [
+		'en_cours_de_traitement',
+		'consignation',
+		'partiellement_livree',
+		'complètement_livree'
+	];
 	public function client()
 	{
 		return $this->belongsTo(Client::class);
@@ -106,7 +111,7 @@ class Commande extends Model
 	{
 		return !in_array($this->statut, ['complètement_livree', 'annulee']);
 	}
-		public function reglements()
+	public function reglements()
 	{
 		return $this->hasMany(Reglement::class);
 	}
@@ -115,6 +120,23 @@ class Commande extends Model
 	{
     return $this->montant_ttc - $this->reglements()->sum('montant');
 	}
+	
+	public function scopeValidatedThisMonth($query)
+	{
+		return $query->whereMonth('date_commande', now()->month)
+			->whereYear('date_commande', now()->year)
+			->whereNotIn('statut', ['brouillon', 'annulee']);
+	}
 
+	public function scopeValidatedThisYear($query)
+	{
+		return $query->whereYear('date_commande', now()->year)
+			->whereIn('statut', self::STATUTS_VALIDES);
+	}
+	public function scopeEnRetard($query)
+{
+    return $query->where('date_livraison_prevue', '<', now())
+        ->whereNotIn('statut', ['complètement_livree', 'annulee']);
+}
 
 }

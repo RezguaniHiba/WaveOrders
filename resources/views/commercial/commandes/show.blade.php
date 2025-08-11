@@ -311,24 +311,64 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Boutons d'action -->
-            <div class="mt-4 d-flex justify-content-between">
-                <a href="{{ route('commandes.index') }}" class="btn btn-outline-secondary rounded-pill px-4">
-                    <i class="fas fa-arrow-left fa-icon-text"></i> Retour à la liste
-                </a>
-                
-                <div class="btn-group">
-                    <button class="btn btn-outline-primary rounded-pill px-4 me-2">
-                        <i class="fas fa-print fa-icon-text"></i> Imprimer
-                    </button>
-                    {{--Boutton pour La modification--}}
-                    <a href="{{ route('commandes.edit',$commande->id) }}" class="btn btn-primary rounded-pill px-4">
-                        <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier la commande
+            <div class="no-print"> <!-- Contenu à exclure d'impression-->
+                <!-- Boutons d'action -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <a href="{{ route('commandes.index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fas fa-arrow-left fa-icon-text"></i> Retour à la liste
                     </a>
+                    <div class="btn-group">
+                    <button id="downloadButton" class="btn btn-outline-primary rounded-pill px-4 me-2">
+                            <i class="fas fa-file-pdf fa-icon-text"></i> Générer PDF
+                        </button>
+                        {{--Boutton pour La modification--}}
+                        <a href="{{ route('commandes.edit',$commande->id) }}" class="btn btn-primary rounded-pill px-4">
+                            <i class="fas fa-pencil-alt fa-icon-text"></i> Modifier la commande
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    //masquer les elements a exculrer -> les boutons
+    const noPrintElements = document.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => el.style.visibility = 'hidden');
+    // Ciblez la carte principale plutôt que tout le contenu
+    var element = document.querySelector(".card");
+    // Options améliorées pour html2canvas
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+    }).then(function(canvas) {
+        const imgData = canvas.toDataURL("image/png", 1.0);  
+        // Calcul des dimensions en mm (format A4 par défaut (portrait ou pasysage))
+        const imgWidth = 210; // Largeur A4 en mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        const doc = new jsPDF({
+            orientation: imgHeight > imgWidth ? 'l' : 'p',//portrait , landscape
+            unit: 'mm'
+        });    
+        // Ajouter un margin de 10mm
+        doc.addImage(imgData, 'PNG', 10, 10, imgWidth - 20, imgHeight - 20);
+        // Restaurer la visibilité des éléments masqués
+        noPrintElements.forEach(el => el.style.visibility = 'visible');
+        doc.save('Commande-{{ $commande->numero }}.pdf');
+    });
+}
+document.getElementById('downloadButton').addEventListener('click', generatePDF);
+</script>
+@endpush
 @endsection

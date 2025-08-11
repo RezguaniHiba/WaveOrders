@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Reglement extends Model
 {
+    protected $table = 'reglements'; 
     use HasFactory;
     protected $casts = [
 		'date_reglement' => 'datetime',

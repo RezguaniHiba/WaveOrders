@@ -10,20 +10,6 @@
         </div>
 
         <div class="card-body p-4">
-            @if ($errors->any())
-                <div class="alert alert-danger shadow-sm mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <strong>Erreurs dans le formulaire :</strong>
-                    </div>
-                    <ul class="mb-0 mt-2 ps-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form action="{{ route('familles-articles.update', $famille->id) }}" method="POST">
                 @csrf
                 @method('PUT')

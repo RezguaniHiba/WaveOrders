@@ -17,17 +17,6 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="commande_id" value="{{ $reglement->commande_id }}">
-                
-                @if($errors->any())
-                    <div class="alert alert-danger mb-4">
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <div class="row g-4">
                     <!-- Section Commande et Client -->
                     <div class="col-md-6">
@@ -178,7 +167,7 @@
                     </div>
                     
                     <div class="d-flex gap-3">
-                        <a href="{{ route('commandes.show', $reglement->commande_id) }}" 
+                        <a href="{{ route('reglements.index', $reglement->commande_id) }}" 
                            class="btn btn-outline-secondary rounded-pill px-3">
                             <i class="fas fa-times me-2"></i> Annuler
                         </a>

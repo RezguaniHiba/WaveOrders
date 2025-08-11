@@ -22,41 +22,35 @@
                 @isset($commande)
                     <input type="hidden" name="from_commande" value="1">
                 @endisset
-
-                @if($errors->any())
-                    <div class="alert alert-danger mb-4">
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <div class="row g-4">
                     <!-- Section Commande et Client -->
                     <div class="col-md-6">
-                        @if(!isset($commande))
                         <div class="mb-4">
                             <label for="commande_id" class="form-label fw-bold required">
                                 Commande associée
                             </label>
-                            <select name="commande_id" id="commande_id" class="form-select" required>
-                                <option value="">Sélectionner une commande...</option>
-                                @foreach($commandes as $cmd)
-                                    <option value="{{ $cmd->id }}" 
-                                        {{ old('commande_id') == $cmd->id ? 'selected' : '' }}
-                                        data-client-id="{{ $cmd->client_id }}"
-                                        data-montant-restant="{{ $cmd->montant_restant }}">
-                                        Commande #{{ $cmd->numero }} - {{ $cmd->client->nom }} 
-                                        ({{ number_format($cmd->montant_ttc, 2) }} DH)
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if(!isset($commande))
+                                <select name="commande_id" id="commande_id" class="form-select" required>
+                                    <option value="">Sélectionner une commande...</option>
+                                    @foreach($commandes as $cmd)
+                                        <option value="{{ $cmd->id }}" 
+                                            {{ old('commande_id') == $cmd->id ? 'selected' : '' }}
+                                            data-client-id="{{ $cmd->client_id }}"
+                                            data-montant-restant="{{ $cmd->montant_restant }}">
+                                            Commande #{{ $cmd->numero }} - {{ $cmd->client->nom }} 
+                                            ({{ number_format($cmd->montant_ttc, 2) }} DH)
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" 
+                                       id="commande_id_display"
+                                       class="form-control" 
+                                       value="Commande #{{ $commande->numero }} - {{ $commande->client->nom }} ({{ number_format($commande->montant_ttc, 2) }} DH)" 
+                                       readonly>
+                                <input type="hidden" name="commande_id" value="{{ $commande->id }}">
+                            @endif
                         </div>
-                        @else
-                            <input type="hidden" name="commande_id" value="{{ $commande->id }}">
-                        @endif
 
                         <div class="mb-3">
                             <label for="client_commande_nom" class="form-label fw-bold">
@@ -99,18 +93,20 @@
                             </label>
                             <select name="client_payeur_id" id="client_payeur_id" class="form-select" required>
                                 @if(isset($commande))
-                                    <option value="">Même que client commande</option>
                                     <option value="{{ $commande->client_id }}" selected>
-                                        {{ $commande->client->nom }}
+                                        Même que client commande ({{ $commande->client->nom }})
                                     </option>
                                 @else
-                                    <option value="">Sélectionner un client...</option>
+                                    <option value="">Sélectionner un client payeur...</option>
                                 @endif
+                                
                                 @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" 
-                                        {{ old('client_payeur_id') == $client->id ? 'selected' : '' }}>
-                                        {{ $client->nom }}
-                                    </option>
+                                    @if(!isset($commande) || $client->id != $commande->client_id)
+                                        <option value="{{ $client->id }}" 
+                                            {{ old('client_payeur_id') == $client->id ? 'selected' : '' }}>
+                                            {{ $client->nom }}
+                                        </option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>

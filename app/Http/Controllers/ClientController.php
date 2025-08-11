@@ -35,7 +35,7 @@ class ClientController extends Controller
     // Filtre par commercial (pour les admins)
    if (auth()->user()->role === 'admin' && filled($request->commercial_id)) {
     $query->where('commercial_id', $request->commercial_id);
-}
+    }
 
     $clients = $query->with('utilisateur')->orderBy('nom')->paginate(15);
     $commerciaux = User::where('role', 'commercial')->where('actif', 1)->get();
@@ -87,8 +87,7 @@ public function store(Request $request)
             ->withErrors(['email' => 'Un client avec cet email ou ce téléphone existe déjà.'])
             ->withInput();
     }
-
-    // Préparation des données
+// Préparation des données
     $data = $request->all();
     $data['commercial_id'] = auth()->user()->role === 'admin'
         ? $request->input('commercial_id')
@@ -193,14 +192,20 @@ public function show(Client $client)
      */
    public function destroy($id)
     {
-        $client = Client::findOrFail($id);
+         $client = Client::with('commandes')->findOrFail($id);
         // Vérification d'accès pour la suppression
         if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
             abort(403, 'Accès refusé');
         }
+        if ($client->commandes->count() > 0) {
+            $countCommandes = $client->commandes()->count();    
+            return back()->with('error', 
+                "Suppression impossible : Ce client a $countCommandes commande(s) associée(s). " .
+                "Pour des raisons de traçabilité, un client avec des commandes ne peut jamais être supprimé.");
+            }
         $client->delete();
          // Redirection selon rôle
-    $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
+         $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
     return redirect()->route($routePrefix . 'index')->with('success', 'Client supprimé.');
     }
 

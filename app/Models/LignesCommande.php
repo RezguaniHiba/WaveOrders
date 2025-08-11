@@ -58,7 +58,14 @@ class LignesCommande extends Model
 	];
 	//les montant sont calculees
 	protected $hidden = ['montant_ht', 'montant_tva'];
-
+	public static $statutsValides = [
+		'en_attente', 
+		'reserve', 
+		'en_consigne', 
+		'prepare', 
+		'livre', 
+		'annule'
+	];
 
 	public function commande()
 	{

@@ -65,4 +65,11 @@ class Client extends Model
 	{
 		return $this->hasMany(Commande::class);
 	}
+	public function commandesImpayees()
+	{
+		return $this->hasMany(Commande::class)
+			->selectRaw('commandes.*, (montant_ttc - COALESCE((SELECT SUM(montant) FROM reglements WHERE commande_id = commandes.id), 0)) as montant_du')
+			->having('montant_du', '>', 0);
+	}
+	
 }

@@ -9,6 +9,9 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\FamillesArticleController;
 use App\Http\Controllers\ReglementController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Commercial\CommercialController;
 
 
 
@@ -22,7 +25,9 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->m
 Route::post('/login', [AuthController::class, 'login']);
 
 // Déconnexion
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout'); //get moins securise
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 
 // Mot de passe oublié
 // Affiche le formulaire
@@ -43,9 +48,8 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
 Route::middleware(['auth'])->group(function () {
     // Admin uniquement
     Route::middleware(['auth', 'isAdmin'])->group(function () {
-        Route::get('/admin/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('/admin/dashboard',[DashboardController::class, 'index'])->name('admin.dashboard');
+
 
         // --- Routes pour gestion des Clients par l'admin ---
         Route::prefix('/admin/clients')->name('admin.clients.')->group(function () {
@@ -63,9 +67,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Commercial uniquement
     Route::middleware(['auth', 'isCommercial'])->group(function () {
-        Route::get('/commercial/dashboard', function () {
-            return view('commercial.dashboard');
-        })->name('commercial.dashboard');
+        Route::get('/dashboard',[CommercialController::class, 'dashboard'])->name('commercial.dashboard');
+
         // --- Routes pour gestion des Clients ---
     Route::prefix('/commercial/clients')->name('clients.')->group(function () {
             Route::get('/', [ClientController::class, 'index'])->name('index');

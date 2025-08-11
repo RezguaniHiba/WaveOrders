@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid px-3 px-md-4">
+<div class="container-fluid content-container">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h3 class="mb-0">
             <i class="fas fa-folder-tree me-2"></i>Liste des familles d'articles
@@ -52,6 +52,17 @@
 </script>
 
 <style>
+    .content-container {
+        padding-left: var(--content-padding-x);
+        padding-right: var(--content-padding-x);
+    }
+
+    @media (max-width: 768px) {
+        .content-container { 
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
     .action-btn {
         width: 32px;
         height: 32px;

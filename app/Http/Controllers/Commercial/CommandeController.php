@@ -85,11 +85,11 @@ class CommandeController extends Controller
             //Génère un identifiant unique de commande.
             $numero = 'CMD-' . strtoupper(uniqid());
             $user = Auth::user();
-
+            $client = Client::findOrFail($request->client_id);//        // Récupérer le client pour obtenir son commercial_id
             $commande = Commande::create([
                 'numero' => $numero,
                 'client_id' => $request->client_id,
-                'commercial_id' => $user->role === 'commercial' ? $user->id : null,
+                'commercial_id' => $client->commercial_id, 
                 'cree_par' => $user->id,// utilisateur qui crée la commande 
                 'date_livraison_prevue' => $request->date_livraison_prevue,
                 'notes' => $request->notes,
@@ -226,9 +226,11 @@ class CommandeController extends Controller
 
     try {
         DB::beginTransaction();
-
+        // Récupérer le nouveau client si changement
+        $client = Client::findOrFail($request->client_id);
         $commande->update([
             'client_id' => $request->client_id,
+             'commercial_id' => $client->commercial_id,
             'date_livraison_prevue' => $request->date_livraison_prevue,
             'notes' => $request->notes,
         ]);

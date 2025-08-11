@@ -24,7 +24,7 @@
     
     <div class="col-md-6">
         <label for="adresse" class="form-label fw-semibold">Adresse</label>
-        <textarea name="adresse" class="form-control shadow-none" rows="2" style="min-height: 38px">{{ old('adresse', $client->adresse ?? '') }}</textarea>
+        <textarea name="adresse" class="form-control shadow-none" rows="1" style="min-height: 38px">{{ old('adresse', $client->adresse ?? '') }}</textarea>
     </div>
     
     <div class="col-md-4">
