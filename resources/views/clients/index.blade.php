@@ -55,7 +55,8 @@
                             @if(auth()->user()->role === 'admin')
                                 <th class="text-nowrap">Commercial</th>
                             @endif
-                            <th class="text-nowrap">Date de création</th>
+                            <th class="text-nowrap" style="width: 90px;">Date de création</th>
+                            <th class="text-nowrap text-center">État Financier</th> 
                             <th class="text-center text-nowrap">Actions</th>
                         </tr>
                     </thead>
@@ -69,7 +70,17 @@
                             @if(auth()->user()->role === 'admin')
                                 <td class="text-truncate" style="max-width: 120px;">{{ $client->utilisateur->nom ?? '-' }}</td>
                             @endif
-                            <td class="text-nowrap">{{ $client->date_creation->format('d/m/y') }}</td>
+                            <td class="text-nowrap text-center" style="width: 90px;">{{ $client->date_creation->format('d/m/y') }}</td>
+                             <td class="text-center">
+                                <a href="{{ route('clients.situation', $client) }}" 
+                                class="btn btn-sm btn-outline-info py-1 px-2"
+                                title="Télécharger la situation complète"
+                                data-bs-toggle="tooltip"
+                                target="_blank">
+                                    <i class="fas fa-file-invoice-dollar me-1"></i>
+                                    <span class="d-none d-md-inline">Situation</span>
+                                </a>
+                            </td>
                             <td class="text-center text-nowrap">
                                 <div class="d-flex justify-content-center gap-1">
                                     <a href="{{ route($routePrefix . 'show', $client) }}" 
@@ -136,12 +147,25 @@
             padding-left: 1rem;
             padding-right: 1rem;
         }
+         .btn-situation span {
+            display: none;
+        }
+        .btn-situation i {
+            margin-right: 0 !important;
+        }
     }
 
     .table {
         font-size: 0.85rem;
     }
+    .table td {
+    vertical-align: middle !important;
+}
 
+    /* Bouton situation */
+    .btn-situation {
+        min-width: 90px;
+    }
     .action-btn {
         width: 28px;
         height: 28px;

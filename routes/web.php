@@ -103,6 +103,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [ReglementController::class, 'create'])->name('commandes.reglements.create');
         Route::post('/', [ReglementController::class, 'store'])->name('commandes.reglements.store');
     });
+    //Route::get('/clients/{client}/situation', [ClientController::class, 'situation'])
+    //->name('clients.situation');
+    Route::get('/clients/{id}/situation', [ClientController::class, 'situationClient'])->name('clients.situation');
+
+
 
 
 });

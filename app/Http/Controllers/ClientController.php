@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Client;
+use App\Models\Commande;
 use Illuminate\Support\Carbon;
 use App\Models\User;
-
-
+use PDF; 
 class ClientController extends Controller
 {
     /**
@@ -106,17 +106,20 @@ public function store(Request $request)
     /**
      * Display the specified resource.
      */
+// Méthode show() modifiée
 public function show(Client $client)
 {
-        // Vérification d'accès : un commercial ne peut voir que ses clients
     if (auth()->user()->role === 'commercial' && $client->commercial_id !== auth()->id()) {
         abort(403, 'Accès refusé');
     }
-        $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
 
-    return view('clients.show', compact('client','routePrefix'));
+    $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
+    
+    return view('clients.show', [
+        'client' => $client->loadCount(['commandes', 'reglements']),
+        'routePrefix' => $routePrefix
+    ]);
 }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -208,5 +211,52 @@ public function show(Client $client)
          $routePrefix = auth()->user()->role === 'admin' ? 'admin.clients.' : 'clients.';
     return redirect()->route($routePrefix . 'index')->with('success', 'Client supprimé.');
     }
+
+public function situationClient($id)
+{
+     $client = Client::with([
+        'commandes' => function($query) {
+            $query->whereNotIn('statut', ['annulee', 'brouillon']) // Filtre direct en SQL
+                  ->orderBy('date_commande', 'desc')
+                  ->with(['reglements' => function($q) {
+                      $q->orderBy('date_reglement', 'desc')
+                        ->with('clientPayeur');
+                  }])
+                  ->withSum('reglements as total_paye', 'montant');
+        },
+        'reglements' => function($query) {
+            $query->orderBy('date_reglement', 'desc')
+                  ->with(['commande', 'clientPayeur']);
+        }
+    ])->findOrFail($id);
+    // Calcul des totaux uniquement sur les commandes valides
+    $totalCommandes = $client->commandes->sum('montant_ttc');
+    $totalPaye = $client->commandes->sum('total_paye');
+    $totalRestant = $totalCommandes - $totalPaye;
+    // Comptage des brouillons
+    $countBrouillons = Commande::where('client_id', $client->id)
+                              ->where('statut', 'brouillon')
+                              ->count();  
+    // Préparation du nom de fichier sécurisé
+    $safeClientName = preg_replace('/[^a-z0-9]/i', '_', $client->nom);
+    $filename = "situation_client_{$safeClientName}_".now()->format('Ymd_His').'.pdf';
+    // Génération du PDF avec options optimisées
+    $pdf = PDF::loadView('pdf.situation-client', [
+        'client' => $client,
+        'totalCommandes' => $totalCommandes,
+        'totalPaye' => $totalPaye,
+        'totalRestant' => $totalRestant,
+        'countBrouillons' => $countBrouillons
+    ])->setPaper('A4', 'portrait')
+      ->setOptions([
+          'isHtml5ParserEnabled' => true,
+          'isRemoteEnabled' => true,
+          'defaultFont' => 'dejavu sans',
+          'enable_php' => true,
+          'dpi' => 96
+      ]);
+
+    return $pdf->stream($filename);
+}
 
 }

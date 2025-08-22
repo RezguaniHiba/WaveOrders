@@ -71,5 +71,40 @@ class Client extends Model
 			->selectRaw('commandes.*, (montant_ttc - COALESCE((SELECT SUM(montant) FROM reglements WHERE commande_id = commandes.id), 0)) as montant_du')
 			->having('montant_du', '>', 0);
 	}
+	// Relations supplémentaires
+public function reglements()
+{
+    return $this->hasManyThrough(//Pour recupperer $client->reglements
+        Reglement::class, // Modèle final qu’on veut récupérer
+        Commande::class,// Modèle intermédiaire par lequel on passe
+        'client_id', // Clé étrangère dans commandes
+        'commande_id' // Clé étrangère dans reglements
+    )->with('clientPayeur');
+}
+
+// Méthodes pour les compteurs
+public function getTotalCommandesAttribute()
+{
+    return $this->commandes()->sum('montant_ttc');
+}
+public function getTotalReglementsAttribute()
+{
+    return $this->reglements()->sum('montant');
+}
+
+// Dans le modèle Client
+public function scopeSearch($query, $term)
+{
+    return $query->where(function($q) use ($term) {
+        $q->where('nom', 'LIKE', "%$term%")
+          ->orWhere('email', 'LIKE', "%$term%")
+          ->orWhere('telephone', 'LIKE', "%$term%");
+    });
+}
+
+public function scopeForCommercial($query, $commercialId)
+{
+    return $query->where('commercial_id', $commercialId);
+}
 	
 }

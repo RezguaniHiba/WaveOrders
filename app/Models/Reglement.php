@@ -46,7 +46,7 @@ class Reglement extends Model
      */
     public function clientPayeur()
     {
-        return $this->belongsTo(Client::class, 'client_payeur_id');
+        return $this->belongsTo(Client::class, 'client_payeur_id');//identifier le client qui a paye la cmd
     }
      /**
      * Accesseur pour le libellé du mode de paiement
